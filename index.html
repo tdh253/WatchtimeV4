@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>Watch Time</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root {
+    --bg: #15120F; --card: #1E1A15; --cardAlt: #241F19;
+    --gold: #E4B14C; --goldDim: #8A6E33; --velvet: #8C2F2F;
+    --cream: #F3ECDF; --muted: #9C9184; --line: #332C22;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--cream); font-family: Georgia, serif; overflow-x: hidden; width: 100%; max-width: 100%; }
+  html { -webkit-text-size-adjust: 100%; }
+  img, input, button { max-width: 100%; }
+  .marquee { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.06em; }
+  .serif { font-family: 'Libre Caslon Text', serif; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; width: 100%; box-sizing: border-box; }
+  .sprockets { display: flex; justify-content: space-between; padding: 6px 12px; background: var(--velvet); }
+  .sprockets span { width: 10px; height: 10px; border-radius: 50%; background: var(--bg); margin: 6px 0; }
+  header { border-bottom: 1px solid var(--line); }
+  .header-inner { padding: 32px 0 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .eyebrow { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--gold); margin-bottom: 4px; }
+  h1.title { font-size: 56px; margin: 0; }
+  .total-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: center; margin-top: 6px; }
+  .total-value { font-size: 40px; color: var(--gold); text-align: center; }
+  main { padding: 24px 0 60px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+  .panel-header { padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+  .panel-body { padding: 0 20px 20px; border-top: 1px dashed var(--line); }
+  .panel-body p { color: var(--muted); font-family: 'Libre Caslon Text', serif; font-size: 14px; padding-top: 12px; }
+  .upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 1px dashed var(--goldDim); border-radius: 12px; color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 32px; min-width: 0; }
+  @media (min-width: 900px) { .grid { grid-template-columns: 2fr 3fr; } }
+  .grid > div { min-width: 0; }
+  .card-title { font-size: 24px; color: var(--gold); margin: 0; padding: 16px 20px; border-bottom: 1px dashed var(--line); }
+  .form-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-btn { flex: 1; padding: 10px; border-radius: 12px; font-family: 'Libre Caslon Text', serif; font-size: 14px; cursor: pointer; background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .toggle-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+  .toggle-btn.small.active { background: var(--goldDim); color: var(--cream); border-color: var(--goldDim); }
+  label.field-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type=text], input[type=number], input[type=date] {
+    width: 100%; padding: 9px 12px; border-radius: 12px; background: var(--cardAlt); color: var(--cream);
+    border: 1px solid var(--line); font-family: 'Libre Caslon Text', serif; font-size: 15px;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .title-row { display: flex; gap: 8px; }
+  .find-btn { flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-radius: 12px; background: transparent; color: var(--gold); border: 1px solid var(--goldDim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; cursor: pointer; }
+  .hint { font-family: 'IBM Plex Mono', monospace; font-size: 11px; margin-top: 4px; }
+  .hint.good { color: var(--gold); }
+  .hint.muted { color: var(--muted); }
+  .hint.bad { color: #D9756B; }
+  .computed-box { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 12px; background: var(--cardAlt); border: 1px solid var(--goldDim); }
+  .add-btn { width: 100%; padding: 11px; border-radius: 12px; background: var(--velvet); color: var(--cream); border: none; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.04em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .stats-panel { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .stat-label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 26px; margin-top: 2px; }
+  .stat-sub { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+  .section-title { display: flex; align-items: center; gap: 8px; color: var(--gold); margin-bottom: 12px; }
+  .section-title h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; margin: 0; letter-spacing: 0.04em; }
+  .empty-box { padding: 24px; text-align: center; background: var(--card); border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-family: 'Libre Caslon Text', serif; font-size: 14px; }
+  .poster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
+  .poster-card { position: relative; border-radius: 16px; overflow: hidden; background: var(--cardAlt); border: 1px solid var(--line); }
+  .poster-card .poster-img-wrap { width: 100%; aspect-ratio: 2 / 3; background: var(--cardAlt); display: flex; align-items: center; justify-content: center; font-size: 38px; overflow: hidden; }
+  .poster-card .poster-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .poster-card .poster-info { padding: 8px 9px 10px; }
+  .poster-card .poster-title { font-family: 'Libre Caslon Text', serif; font-size: 13px; color: var(--cream); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5em; }
+  .poster-card .poster-duration { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gold); margin-top: 4px; }
+  .poster-card .poster-delete { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; background: rgba(21,18,15,0.75); border: none; color: var(--cream); font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+  .poster-card .poster-rating { position: absolute; bottom: 44px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: none; padding: 3px; z-index: 2; cursor: pointer; }
+  .poster-card .poster-rating-inner { width: 100%; height: 100%; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--cream); }
+  .poster-card .poster-clickzone { position: absolute; inset: 0; cursor: pointer; background: transparent; border: none; padding: 0; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(10,8,6,0.82); z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+  @media (min-width: 700px) { .modal-overlay { align-items: center; } }
+  .modal-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px 18px 0 0; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; padding: 20px; position: relative; }
+  @media (min-width: 700px) { .modal-box { border-radius: 18px; } }
+  .modal-close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; background: var(--cardAlt); border: none; color: var(--cream); font-size: 15px; display: flex; align-items: center; justify-content: center; }
+  .modal-header { display: flex; gap: 14px; margin-bottom: 14px; padding-right: 36px; }
+  .modal-poster { width: 84px; flex-shrink: 0; border-radius: 10px; overflow: hidden; aspect-ratio: 2/3; background: var(--cardAlt); display: flex; align-items: center; justify-content: center; font-size: 30px; }
+  .modal-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.03em; color: var(--cream); line-height: 1.15; }
+  .modal-meta { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold); margin-top: 6px; }
+  .modal-overview { font-family: 'Libre Caslon Text', serif; font-size: 15px; line-height: 1.5; color: var(--cream); margin-top: 4px; }
+  .modal-loading, .modal-empty { font-family: 'Libre Caslon Text', serif; color: var(--muted); font-size: 14px; }
+  .episodes-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); letter-spacing: 0.03em; margin: 18px 0 8px; }
+  .season-block { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .season-header { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--cardAlt); border: none; color: var(--cream); font-family: 'Libre Caslon Text', serif; font-size: 14px; cursor: pointer; }
+  .season-header .season-count { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gold); }
+  .season-body { padding: 8px 12px 10px; }
+  .season-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+  .season-actions button { flex: 1; padding: 6px; border-radius: 6px; background: transparent; border: 1px solid var(--goldDim); color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; cursor: pointer; }
+  .episode-row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .episode-row:last-child { border-bottom: none; }
+  .episode-row input[type=checkbox] { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--gold); flex-shrink: 0; }
+  .episode-name { font-family: 'Libre Caslon Text', serif; font-size: 13.5px; color: var(--cream); line-height: 1.3; }
+  .episode-meta { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+  .delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; opacity: 0.6; font-size: 15px; }
+  .delete-btn:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ===================== BASE DE DONNÉES LOCALE =====================
+  var KNOWN_MOVIES = {
+  "interstellar": { matchedTitle: "Interstellar", year: 2014, runtimeMinutes: 169 },
+  "inception": { matchedTitle: "Inception", year: 2010, runtimeMinutes: 148 },
+  "titanic": { matchedTitle: "Titanic", year: 1997, runtimeMinutes: 195 },
+  "avatar": { matchedTitle: "Avatar", year: 2009, runtimeMinutes: 162 },
+  "avatar la voie de leau": { matchedTitle: "Avatar : La Voie de l'eau", year: 2022, runtimeMinutes: 192 },
+  "le fabuleux destin damelie poulain": { matchedTitle: "Le Fabuleux Destin d'Amélie Poulain", year: 2001, runtimeMinutes: 122 },
+  "intouchables": { matchedTitle: "Intouchables", year: 2011, runtimeMinutes: 112 },
+  "oss 117 le caire nid despions": { matchedTitle: "OSS 117 : Le Caire nid d'espions", year: 2006, runtimeMinutes: 99 },
+  "the dark knight": { matchedTitle: "The Dark Knight", year: 2008, runtimeMinutes: 152 },
+  "the dark knight rises": { matchedTitle: "The Dark Knight Rises", year: 2012, runtimeMinutes: 165 },
+  "batman begins": { matchedTitle: "Batman Begins", year: 2005, runtimeMinutes: 140 },
+  "oppenheimer": { matchedTitle: "Oppenheimer", year: 2023, runtimeMinutes: 180 },
+  "barbie": { matchedTitle: "Barbie", year: 2023, runtimeMinutes: 114 },
+  "dune": { matchedTitle: "Dune", year: 2021, runtimeMinutes: 155 },
+  "dune deuxieme partie": { matchedTitle: "Dune : Deuxième Partie", year: 2024, runtimeMinutes: 166 },
+  "gladiator": { matchedTitle: "Gladiator", year: 2000, runtimeMinutes: 155 },
+  "le seigneur des anneaux la communaute de lanneau": { matchedTitle: "Le Seigneur des anneaux : La Communauté de l'anneau", year: 2001, runtimeMinutes: 178 },
+  "le seigneur des anneaux les deux tours": { matchedTitle: "Le Seigneur des anneaux : Les Deux Tours", year: 2002, runtimeMinutes: 179 },
+  "le seigneur des anneaux le retour du roi": { matchedTitle: "Le Seigneur des anneaux : Le Retour du Roi", year: 2003, runtimeMinutes: 201 },
+  "pulp fiction": { matchedTitle: "Pulp Fiction", year: 1994, runtimeMinutes: 154 },
+  "fight club": { matchedTitle: "Fight Club", year: 1999, runtimeMinutes: 139 },
+  "forrest gump": { matchedTitle: "Forrest Gump", year: 1994, runtimeMinutes: 142 },
+  "matrix": { matchedTitle: "Matrix", year: 1999, runtimeMinutes: 136 },
+  "parasite": { matchedTitle: "Parasite", year: 2019, runtimeMinutes: 132 },
+  "joker": { matchedTitle: "Joker", year: 2019, runtimeMinutes: 122 },
+  "top gun maverick": { matchedTitle: "Top Gun: Maverick", year: 2022, runtimeMinutes: 130 },
+  "spider man across the spider verse": { matchedTitle: "Spider-Man: Across the Spider-Verse", year: 2023, runtimeMinutes: 140 },
+  "avengers endgame": { matchedTitle: "Avengers: Endgame", year: 2019, runtimeMinutes: 181 },
+  "avengers infinity war": { matchedTitle: "Avengers: Infinity War", year: 2018, runtimeMinutes: 149 },
+  "la la land": { matchedTitle: "La La Land", year: 2016, runtimeMinutes: 128 },
+  "whiplash": { matchedTitle: "Whiplash", year: 2014, runtimeMinutes: 107 },
+  "shutter island": { matchedTitle: "Shutter Island", year: 2010, runtimeMinutes: 138 },
+  "django unchained": { matchedTitle: "Django Unchained", year: 2012, runtimeMinutes: 165 },
+  "1917": { matchedTitle: "1917", year: 2019, runtimeMinutes: 119 },
+  // --- Netflix ---
+  "glass onion": { matchedTitle: "Glass Onion : Une histoire à couteaux tirés", year: 2022, runtimeMinutes: 139 },
+  "a couteaux tires": { matchedTitle: "À couteaux tirés (Knives Out)", year: 2019, runtimeMinutes: 130 },
+  "dont look up": { matchedTitle: "Don't Look Up : Déni cosmique", year: 2021, runtimeMinutes: 138 },
+  "the irishman": { matchedTitle: "The Irishman", year: 2019, runtimeMinutes: 209 },
+  "red notice": { matchedTitle: "Red Notice", year: 2021, runtimeMinutes: 118 },
+  "extraction": { matchedTitle: "Extraction", year: 2020, runtimeMinutes: 116 },
+  "extraction 2": { matchedTitle: "Extraction 2", year: 2023, runtimeMinutes: 122 },
+  "6 underground": { matchedTitle: "6 Underground", year: 2019, runtimeMinutes: 128 },
+  "bird box": { matchedTitle: "Bird Box", year: 2018, runtimeMinutes: 124 },
+  "roma": { matchedTitle: "Roma", year: 2018, runtimeMinutes: 135 },
+  "murder mystery": { matchedTitle: "Murder Mystery", year: 2019, runtimeMinutes: 97 },
+  "enola holmes": { matchedTitle: "Enola Holmes", year: 2020, runtimeMinutes: 123 },
+  "the gray man": { matchedTitle: "The Gray Man", year: 2022, runtimeMinutes: 129 },
+  // --- Prime Video ---
+  "air": { matchedTitle: "Air", year: 2023, runtimeMinutes: 111 },
+  "the tomorrow war": { matchedTitle: "The Tomorrow War", year: 2021, runtimeMinutes: 140 },
+  "the beekeeper": { matchedTitle: "The Beekeeper", year: 2024, runtimeMinutes: 105 },
+  "road house": { matchedTitle: "Road House", year: 2024, runtimeMinutes: 121 },
+  "borderlands": { matchedTitle: "Borderlands", year: 2024, runtimeMinutes: 101 },
+  // --- Disney+ / Pixar / Marvel / Star Wars ---
+  "le roi lion": { matchedTitle: "Le Roi Lion", year: 1994, runtimeMinutes: 88 },
+  "le roi": { matchedTitle: "Le Roi (The King)", year: 2019, runtimeMinutes: 140 },
+  "the king": { matchedTitle: "Le Roi (The King)", year: 2019, runtimeMinutes: 140 },
+  "frozen la reine des neiges": { matchedTitle: "La Reine des Neiges", year: 2013, runtimeMinutes: 102 },
+  "la reine des neiges 2": { matchedTitle: "La Reine des Neiges 2", year: 2019, runtimeMinutes: 103 },
+  "vaiana": { matchedTitle: "Vaiana", year: 2016, runtimeMinutes: 107 },
+  "encanto": { matchedTitle: "Encanto", year: 2021, runtimeMinutes: 102 },
+  "coco": { matchedTitle: "Coco", year: 2017, runtimeMinutes: 105 },
+  "toy story": { matchedTitle: "Toy Story", year: 1995, runtimeMinutes: 81 },
+  "toy story 3": { matchedTitle: "Toy Story 3", year: 2010, runtimeMinutes: 103 },
+  "toy story 4": { matchedTitle: "Toy Story 4", year: 2019, runtimeMinutes: 100 },
+  "le monde de nemo": { matchedTitle: "Le Monde de Nemo", year: 2003, runtimeMinutes: 100 },
+  "zootopie": { matchedTitle: "Zootopie", year: 2016, runtimeMinutes: 108 },
+  "vice versa": { matchedTitle: "Vice-Versa", year: 2015, runtimeMinutes: 95 },
+  "vice versa 2": { matchedTitle: "Vice-Versa 2", year: 2024, runtimeMinutes: 96 },
+  "luca": { matchedTitle: "Luca", year: 2021, runtimeMinutes: 95 },
+  "alerte rouge": { matchedTitle: "Alerte Rouge (Turning Red)", year: 2022, runtimeMinutes: 100 },
+  "soul": { matchedTitle: "Soul", year: 2020, runtimeMinutes: 100 },
+  "raya et le dernier dragon": { matchedTitle: "Raya et le Dernier Dragon", year: 2021, runtimeMinutes: 107 },
+  "iron man": { matchedTitle: "Iron Man", year: 2008, runtimeMinutes: 126 },
+  "black panther": { matchedTitle: "Black Panther", year: 2018, runtimeMinutes: 134 },
+  "les gardiens de la galaxie": { matchedTitle: "Les Gardiens de la Galaxie", year: 2014, runtimeMinutes: 121 },
+  "doctor strange": { matchedTitle: "Doctor Strange", year: 2016, runtimeMinutes: 115 },
+  "spider man no way home": { matchedTitle: "Spider-Man: No Way Home", year: 2021, runtimeMinutes: 148 },
+  "star wars un nouvel espoir": { matchedTitle: "Star Wars : Un nouvel espoir", year: 1977, runtimeMinutes: 121 },
+  "star wars lempire contre attaque": { matchedTitle: "Star Wars : L'Empire contre-attaque", year: 1980, runtimeMinutes: 124 },
+  "star wars le reveil de la force": { matchedTitle: "Star Wars : Le Réveil de la Force", year: 2015, runtimeMinutes: 138 },
+};
+
+  var KNOWN_SERIES = {
+  "the office": { matchedTitle: "The Office (US)", episodeMinutes: 22, totalEpisodes: 201, totalSeasons: 9, totalMinutes: 4440 },
+  "the office uk": { matchedTitle: "The Office (UK)", episodeMinutes: 29, totalEpisodes: 14, totalSeasons: 2 },
+  "friends": { matchedTitle: "Friends", episodeMinutes: 22, totalEpisodes: 236, totalSeasons: 10, totalMinutes: 5320 },
+  "breaking bad": { matchedTitle: "Breaking Bad", episodeMinutes: 47, totalEpisodes: 62, totalSeasons: 5, totalMinutes: 2905 },
+  "better call saul": { matchedTitle: "Better Call Saul", episodeMinutes: 46, totalEpisodes: 63, totalSeasons: 6 },
+  "game of thrones": { matchedTitle: "Game of Thrones", episodeMinutes: 57, totalEpisodes: 73, totalSeasons: 8, totalMinutes: 4220 },
+  "stranger things": { matchedTitle: "Stranger Things", episodeMinutes: 51, totalEpisodes: 42, totalSeasons: 4 },
+  "la casa de papel": { matchedTitle: "La Casa de Papel", episodeMinutes: 50, totalEpisodes: 41, totalSeasons: 5 },
+  "money heist": { matchedTitle: "La Casa de Papel (Money Heist)", episodeMinutes: 50, totalEpisodes: 41, totalSeasons: 5 },
+  "dark": { matchedTitle: "Dark", episodeMinutes: 55, totalEpisodes: 26, totalSeasons: 3 },
+  "narcos": { matchedTitle: "Narcos", episodeMinutes: 49, totalEpisodes: 30, totalSeasons: 3 },
+  "the witcher": { matchedTitle: "The Witcher", episodeMinutes: 60, totalEpisodes: 24, totalSeasons: 3 },
+  "the mandalorian": { matchedTitle: "The Mandalorian", episodeMinutes: 38, totalEpisodes: 24, totalSeasons: 3 },
+  "house of cards": { matchedTitle: "House of Cards", episodeMinutes: 51, totalEpisodes: 73, totalSeasons: 6 },
+  "the boys": { matchedTitle: "The Boys", episodeMinutes: 60, totalEpisodes: 32, totalSeasons: 4 },
+  "chernobyl": { matchedTitle: "Chernobyl", episodeMinutes: 63, totalEpisodes: 5, totalSeasons: 1 },
+  "sherlock": { matchedTitle: "Sherlock", episodeMinutes: 88, totalEpisodes: 13, totalSeasons: 4 },
+  "peaky blinders": { matchedTitle: "Peaky Blinders", episodeMinutes: 58, totalEpisodes: 36, totalSeasons: 6 },
+  "fargo": { matchedTitle: "Fargo", episodeMinutes: 51, totalEpisodes: 51, totalSeasons: 5 },
+  "true detective": { matchedTitle: "True Detective", episodeMinutes: 55, totalEpisodes: 33, totalSeasons: 4 },
+  "rick and morty": { matchedTitle: "Rick and Morty", episodeMinutes: 22, totalEpisodes: 71, totalSeasons: 7 },
+  "rick et morty": { matchedTitle: "Rick and Morty", episodeMinutes: 22, totalEpisodes: 71, totalSeasons: 7 },
+  "greys anatomy": { matchedTitle: "Grey's Anatomy", episodeMinutes: 43, totalEpisodes: 431, totalSeasons: 20 },
+  "lupin": { matchedTitle: "Lupin", episodeMinutes: 47, totalEpisodes: 20, totalSeasons: 3 },
+  "the crown": { matchedTitle: "The Crown", episodeMinutes: 57, totalEpisodes: 60, totalSeasons: 6 },
+  "succession": { matchedTitle: "Succession", episodeMinutes: 55, totalEpisodes: 39, totalSeasons: 4 },
+  "the walking dead": { matchedTitle: "The Walking Dead", episodeMinutes: 44, totalEpisodes: 177, totalSeasons: 11 },
+  "how i met your mother": { matchedTitle: "How I Met Your Mother", episodeMinutes: 22, totalEpisodes: 208, totalSeasons: 9 },
+  "the big bang theory": { matchedTitle: "The Big Bang Theory", episodeMinutes: 20, totalEpisodes: 279, totalSeasons: 12 },
+  "brooklyn nine nine": { matchedTitle: "Brooklyn Nine-Nine", episodeMinutes: 22, totalEpisodes: 153, totalSeasons: 8 },
+  "vikings": { matchedTitle: "Vikings", episodeMinutes: 44, totalEpisodes: 89, totalSeasons: 6 },
+  "outer banks": { matchedTitle: "Outer Banks", episodeMinutes: 50, totalEpisodes: 30, totalSeasons: 4 },
+  "euphoria": { matchedTitle: "Euphoria", episodeMinutes: 55, totalEpisodes: 18, totalSeasons: 2 },
+  // --- Netflix ---
+  "squid game": { matchedTitle: "Squid Game", episodeMinutes: 50, totalEpisodes: 22, totalSeasons: 3, totalMinutes: 1100 },
+  "ozark": { matchedTitle: "Ozark", episodeMinutes: 60, totalEpisodes: 44, totalSeasons: 4 },
+  "the umbrella academy": { matchedTitle: "The Umbrella Academy", episodeMinutes: 55, totalEpisodes: 40, totalSeasons: 4 },
+  "you": { matchedTitle: "You", episodeMinutes: 47, totalEpisodes: 50, totalSeasons: 5 },
+  "bridgerton": { matchedTitle: "Bridgerton", episodeMinutes: 60, totalEpisodes: 28, totalSeasons: 3 },
+  "emily in paris": { matchedTitle: "Emily in Paris", episodeMinutes: 28, totalEpisodes: 40, totalSeasons: 4 },
+  "cobra kai": { matchedTitle: "Cobra Kai", episodeMinutes: 30, totalEpisodes: 65, totalSeasons: 6 },
+  "the queens gambit": { matchedTitle: "Le Jeu de la Dame", episodeMinutes: 57, totalEpisodes: 7, totalSeasons: 1 },
+  "sex education": { matchedTitle: "Sex Education", episodeMinutes: 50, totalEpisodes: 33, totalSeasons: 4 },
+  "elite": { matchedTitle: "Élite", episodeMinutes: 50, totalEpisodes: 64, totalSeasons: 8 },
+  "beef": { matchedTitle: "Beef", episodeMinutes: 35, totalEpisodes: 10, totalSeasons: 1 },
+  "wednesday": { matchedTitle: "Wednesday", episodeMinutes: 50, totalEpisodes: 16, totalSeasons: 2 },
+  "mercredi": { matchedTitle: "Mercredi (Wednesday)", episodeMinutes: 50, totalEpisodes: 16, totalSeasons: 2 },
+  "the last of us": { matchedTitle: "The Last of Us", episodeMinutes: 55, totalEpisodes: 16, totalSeasons: 2 },
+  // --- Prime Video ---
+  "the marvelous mrs maisel": { matchedTitle: "The Marvelous Mrs. Maisel", episodeMinutes: 55, totalEpisodes: 43, totalSeasons: 5 },
+  "jack ryan": { matchedTitle: "Jack Ryan", episodeMinutes: 50, totalEpisodes: 32, totalSeasons: 4 },
+  "the wheel of time": { matchedTitle: "The Wheel of Time", episodeMinutes: 55, totalEpisodes: 24, totalSeasons: 3 },
+  "fallout": { matchedTitle: "Fallout", episodeMinutes: 60, totalEpisodes: 8, totalSeasons: 1 },
+  "reacher": { matchedTitle: "Reacher", episodeMinutes: 48, totalEpisodes: 24, totalSeasons: 3 },
+  "the rings of power": { matchedTitle: "Le Seigneur des Anneaux : Les Anneaux de Pouvoir", episodeMinutes: 65, totalEpisodes: 16, totalSeasons: 2 },
+  "fleabag": { matchedTitle: "Fleabag", episodeMinutes: 26, totalEpisodes: 12, totalSeasons: 2 },
+  "invincible": { matchedTitle: "Invincible", episodeMinutes: 48, totalEpisodes: 24, totalSeasons: 3 },
+  "good omens": { matchedTitle: "Good Omens", episodeMinutes: 50, totalEpisodes: 12, totalSeasons: 2 },
+  // --- Disney+ / Marvel / Star Wars ---
+  "wandavision": { matchedTitle: "WandaVision", episodeMinutes: 35, totalEpisodes: 9, totalSeasons: 1 },
+  "loki": { matchedTitle: "Loki", episodeMinutes: 47, totalEpisodes: 12, totalSeasons: 2 },
+  "ahsoka": { matchedTitle: "Ahsoka", episodeMinutes: 50, totalEpisodes: 8, totalSeasons: 1 },
+  "obi wan kenobi": { matchedTitle: "Obi-Wan Kenobi", episodeMinutes: 45, totalEpisodes: 6, totalSeasons: 1 },
+  "she hulk": { matchedTitle: "She-Hulk : Avocate", episodeMinutes: 35, totalEpisodes: 9, totalSeasons: 1 },
+  "moon knight": { matchedTitle: "Moon Knight", episodeMinutes: 48, totalEpisodes: 6, totalSeasons: 1 },
+  "hawkeye": { matchedTitle: "Hawkeye", episodeMinutes: 45, totalEpisodes: 6, totalSeasons: 1 },
+  "falcon et le soldat de lhiver": { matchedTitle: "Falcon et le Soldat de l'Hiver", episodeMinutes: 45, totalEpisodes: 6, totalSeasons: 1 },
+  "andor": { matchedTitle: "Andor", episodeMinutes: 42, totalEpisodes: 24, totalSeasons: 2 },
+  "the bad batch": { matchedTitle: "Star Wars: The Bad Batch", episodeMinutes: 30, totalEpisodes: 47, totalSeasons: 3 },
+  "the mandalorian saison": { matchedTitle: "The Mandalorian", episodeMinutes: 38, totalEpisodes: 24, totalSeasons: 3 },
+  // --- ajouts issus de l'import IMDb (estimations basées sur des données générales, à vérifier au besoin) ---
+  "animal kingdom": { matchedTitle: "Animal Kingdom", episodeMinutes: 44, totalEpisodes: 60, totalSeasons: 6 },
+  "my hero academia": { matchedTitle: "My Hero Academia", episodeMinutes: 24, totalEpisodes: 159, totalSeasons: 7 },
+  "naruto": { matchedTitle: "Naruto", episodeMinutes: 23, totalEpisodes: 220, totalSeasons: 9 },
+  "jujutsu kaisen": { matchedTitle: "Jujutsu Kaisen", episodeMinutes: 24, totalEpisodes: 47, totalSeasons: 2 },
+  "one piece": { matchedTitle: "One Piece (série live action)", episodeMinutes: 55, totalEpisodes: 8, totalSeasons: 1 },
+  "killing eve": { matchedTitle: "Killing Eve", episodeMinutes: 43, totalEpisodes: 32, totalSeasons: 4 },
+  "the chosen": { matchedTitle: "The Chosen", episodeMinutes: 50, totalEpisodes: 40, totalSeasons: 5 },
+  "one punch man": { matchedTitle: "One Punch Man", episodeMinutes: 24, totalEpisodes: 24, totalSeasons: 2 },
+  "alice in borderland": { matchedTitle: "Alice in Borderland", episodeMinutes: 55, totalEpisodes: 17, totalSeasons: 2 },
+  "sense8": { matchedTitle: "Sense8", episodeMinutes: 60, totalEpisodes: 23, totalSeasons: 2 },
+  "severance": { matchedTitle: "Severance", episodeMinutes: 52, totalEpisodes: 19, totalSeasons: 2 },
+  "the white lotus": { matchedTitle: "The White Lotus", episodeMinutes: 58, totalEpisodes: 19, totalSeasons: 3 },
+  "silo": { matchedTitle: "Silo", episodeMinutes: 50, totalEpisodes: 20, totalSeasons: 2 },
+  "black mirror": { matchedTitle: "Black Mirror", episodeMinutes: 55, totalEpisodes: 28, totalSeasons: 7 },
+  "resident alien": { matchedTitle: "Resident Alien", episodeMinutes: 42, totalEpisodes: 50, totalSeasons: 4 },
+  "frieren": { matchedTitle: "Frieren", episodeMinutes: 24, totalEpisodes: 28, totalSeasons: 1 },
+  "overlord": { matchedTitle: "Overlord", episodeMinutes: 24, totalEpisodes: 52, totalSeasons: 4 },
+  "tokyo ghoul": { matchedTitle: "Tokyo Ghoul", episodeMinutes: 24, totalEpisodes: 24, totalSeasons: 2 },
+  "blue period": { matchedTitle: "Blue Period", episodeMinutes: 24, totalEpisodes: 12, totalSeasons: 1 },
+  "black clover": { matchedTitle: "Black Clover", episodeMinutes: 24, totalEpisodes: 170, totalSeasons: 1 },
+  "dorohedoro": { matchedTitle: "Dorohedoro", episodeMinutes: 24, totalEpisodes: 12, totalSeasons: 1 },
+  "blue lock": { matchedTitle: "Blue Lock", episodeMinutes: 24, totalEpisodes: 35, totalSeasons: 2 },
+  "my dress up darling": { matchedTitle: "My Dress-Up Darling", episodeMinutes: 24, totalEpisodes: 24, totalSeasons: 2 },
+  "dandadan": { matchedTitle: "Dandadan", episodeMinutes: 24, totalEpisodes: 24, totalSeasons: 2 },
+  "sakamoto days": { matchedTitle: "Sakamoto Days", episodeMinutes: 24, totalEpisodes: 11, totalSeasons: 1 },
+  "solar opposites": { matchedTitle: "Solar Opposites", episodeMinutes: 22, totalEpisodes: 47, totalSeasons: 5 },
+  "altered carbon": { matchedTitle: "Altered Carbon", episodeMinutes: 57, totalEpisodes: 18, totalSeasons: 2 },
+  "future man": { matchedTitle: "Future Man", episodeMinutes: 28, totalEpisodes: 39, totalSeasons: 3 },
+  "lost les disparus": { matchedTitle: "Lost : Les Disparus", episodeMinutes: 43, totalEpisodes: 121, totalSeasons: 6 },
+  "kuroko no basuke": { matchedTitle: "Kuroko no Basuke", episodeMinutes: 24, totalEpisodes: 75, totalSeasons: 3 },
+  "my name": { matchedTitle: "My Name", episodeMinutes: 55, totalEpisodes: 8, totalSeasons: 1 },
+  "mask girl": { matchedTitle: "Mask Girl", episodeMinutes: 55, totalEpisodes: 7, totalSeasons: 1 },
+  "ghosts fantomes a la maison": { matchedTitle: "Ghosts : Fantômes à la maison", episodeMinutes: 22, totalEpisodes: 76, totalSeasons: 4 },
+  "hoops": { matchedTitle: "Hoops", episodeMinutes: 26, totalEpisodes: 10, totalSeasons: 1 },
+  "devil may cry": { matchedTitle: "Devil May Cry", episodeMinutes: 37, totalEpisodes: 8, totalSeasons: 1 },
+  "dead boy detectives": { matchedTitle: "Dead Boy Detectives", episodeMinutes: 50, totalEpisodes: 8, totalSeasons: 1 },
+  "the recruit": { matchedTitle: "The Recruit", episodeMinutes: 50, totalEpisodes: 16, totalSeasons: 2 },
+  "fire country pompiers sur appel": { matchedTitle: "Fire Country : Pompiers sur appel", episodeMinutes: 43, totalEpisodes: 70, totalSeasons: 4 },
+  "how to sell drugs online fast": { matchedTitle: "How to Sell Drugs Online (Fast)", episodeMinutes: 35, totalEpisodes: 18, totalSeasons: 3 },
+};
+
+  function normalizeKey(str) {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function containsAsWords(haystack, needle) {
+    if (!needle) return false;
+    var escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(^|\\s)" + escaped + "($|\\s)").test(haystack);
+  }
+
+  function findInDatabase(title, db) {
+    var key = normalizeKey(title);
+    if (db[key]) return db[key];
+    var bestMatch = null, bestLength = 0;
+    for (var dbKey in db) {
+      if (!db.hasOwnProperty(dbKey)) continue;
+      var shorter = Math.min(key.length, dbKey.length);
+      var longer = Math.max(key.length, dbKey.length);
+      var coversEnough = shorter / longer >= 0.6;
+      var wordMatch = containsAsWords(key, dbKey) || containsAsWords(dbKey, key);
+      if (wordMatch && coversEnough && dbKey.length > bestLength) {
+        bestMatch = db[dbKey];
+        bestLength = dbKey.length;
+      }
+    }
+    return bestMatch;
+  }
+
+  // ===================== UTILITAIRES =====================
+  function formatDuration(totalMinutes) {
+    var d = Math.floor(totalMinutes / 1440);
+    var h = Math.floor((totalMinutes % 1440) / 60);
+    var m = totalMinutes % 60;
+    if (d > 0) {
+      var parts = [d + " j"];
+      if (h > 0) parts.push(h + " h");
+      if (m > 0) parts.push(m + " min");
+      return parts.join(" ");
+    }
+    if (h === 0) return m + " min";
+    if (m === 0) return h + " h";
+    return h + " h " + m + " min";
+  }
+
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function formatDateFR(iso) {
+    var d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function uid() {
+    return Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ===================== STOCKAGE (localStorage) =====================
+  function loadTmdbKey() {
+    try { return localStorage.getItem("watchtime:tmdb-key") || ""; } catch (e) { return ""; }
+  }
+  function saveTmdbKey(key) {
+    try { localStorage.setItem("watchtime:tmdb-key", key); } catch (e) {}
+  }
+  function loadPosterCache() {
+    try {
+      var raw = localStorage.getItem("watchtime:poster-cache");
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  function savePosterCache(cache) {
+    try { localStorage.setItem("watchtime:poster-cache", JSON.stringify(cache)); } catch (e) {}
+  }
+
+  function loadEntries() {
+    try {
+      var raw = localStorage.getItem("watchtime:watch-entries");
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function saveEntries(entries) {
+    try {
+      localStorage.setItem("watchtime:watch-entries", JSON.stringify(entries));
+    } catch (e) {
+      console.error("Erreur de sauvegarde", e);
+    }
+  }
+
+  // ===================== PARSEUR CSV (mini, sans dépendance) =====================
+  function parseCSV(text) {
+    var lines = text.split(/\r?\n/).filter(function (l) { return l.length > 0; });
+    if (lines.length === 0) return [];
+    var headers = parseCSVLine(lines[0]);
+    var rows = [];
+    for (var i = 1; i < lines.length; i++) {
+      var vals = parseCSVLine(lines[i]);
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = vals[j] !== undefined ? vals[j] : "";
+      rows.push(obj);
+    }
+    return rows;
+  }
+  function parseCSVLine(line) {
+    var result = [], cur = "", inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; } else { inQuotes = false; }
+        } else { cur += c; }
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ",") { result.push(cur); cur = ""; }
+        else cur += c;
+      }
+    }
+    result.push(cur);
+    return result;
+  }
+
+  // ===================== IMPORT IMDB =====================
+  var MOVIE_LIKE_TYPES = { movie: 1, tvMovie: 1, video: 1, short: 1, tvSpecial: 1, documentary: 1 };
+  var SERIES_LIKE_TYPES = { tvSeries: 1, tvMiniSeries: 1 };
+
+  function parseImdbRuntime(raw) {
+    var n = parseInt(String(raw).replace(/[^\d]/g, ""), 10);
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  function processImdbRows(rows, existingEntries) {
+    var existingIds = {};
+    existingEntries.forEach(function (e) { if (e.imdbId) existingIds[e.imdbId] = true; });
+    var newEntries = [], unmatched = [], skippedDuplicate = 0;
+
+    rows.forEach(function (row) {
+      var imdbId = row["Const"] || row["const"];
+      var rawTitle = (row["Title"] || row["title"] || "").trim();
+      var titleType = row["Title Type"] || row["titleType"] || "movie";
+      var csvRuntime = parseImdbRuntime(row["Runtime (mins)"]);
+      var dateRated = row["Date Rated"] || row["Release Date"] || null;
+      var date = dateRated && /^\d{4}-\d{2}-\d{2}/.test(dateRated) ? dateRated.slice(0, 10) : todayISO();
+
+      if (!rawTitle) return;
+      if (imdbId && existingIds[imdbId]) { skippedDuplicate++; return; }
+
+      var isSeries = !!SERIES_LIKE_TYPES[titleType];
+      var isMovieLike = !!MOVIE_LIKE_TYPES[titleType] || (!isSeries && titleType !== "tvEpisode");
+      if (!isSeries && !isMovieLike) return;
+
+      if (isSeries) {
+        var dbMatch = findInDatabase(rawTitle, KNOWN_SERIES);
+        var minutes, episodes, episodeMinutes, note;
+        if (dbMatch && dbMatch.totalMinutes) {
+          minutes = dbMatch.totalMinutes;
+          note = "durée totale exacte (base locale)";
+        } else if (dbMatch) {
+          minutes = dbMatch.episodeMinutes * dbMatch.totalEpisodes;
+          episodes = dbMatch.totalEpisodes;
+          episodeMinutes = dbMatch.episodeMinutes;
+          note = "estimée (moyenne épisode × nb épisodes)";
+        } else {
+          unmatched.push({ title: rawTitle, type: "series", imdbId: imdbId || null, date: date, csvRuntime: csvRuntime });
+          return;
+        }
+        newEntries.push({
+          id: uid(), title: dbMatch ? dbMatch.matchedTitle : rawTitle, type: "series",
+          minutes: minutes, episodes: episodes || null, episodeMinutes: episodeMinutes || null,
+          date: date, imdbId: imdbId || null, importNote: note
+        });
+      } else {
+        var dbMatchM = findInDatabase(rawTitle, KNOWN_MOVIES);
+        var minutesM = csvRuntime || (dbMatchM ? dbMatchM.runtimeMinutes : null);
+        if (!minutesM) {
+          unmatched.push({ title: rawTitle, type: "movie", imdbId: imdbId || null, date: date, csvRuntime: csvRuntime });
+          return;
+        }
+        newEntries.push({
+          id: uid(), title: dbMatchM ? dbMatchM.matchedTitle : rawTitle, type: "movie",
+          minutes: minutesM, episodes: null, episodeMinutes: null,
+          date: date, imdbId: imdbId || null,
+          importNote: csvRuntime ? "durée exacte (IMDb)" : "durée exacte (base locale)"
+        });
+      }
+    });
+
+    return { newEntries: newEntries, skippedDuplicate: skippedDuplicate, unmatched: unmatched };
+  }
+
+  // ===================== ÉTAT =====================
+  var posterCache = loadPosterCache();
+  var posterPending = {};
+  var tmdbBroken = false;
+
+  var state = {
+    entries: loadEntries(),
+    tmdbKey: loadTmdbKey(),
+    tmdbError: "",
+    showSettings: false,
+    type: "movie",
+    seriesMode: "total",
+    title: "",
+    movieMinutes: "",
+    episodes: "",
+    episodeMinutes: "",
+    seriesTotalHours: "",
+    seriesTotalMinutes: "",
+    date: todayISO(),
+    formError: "",
+    lookupStatus: "idle",
+    lookupInfo: null,
+    lookupSource: null,
+    lookupCandidates: null,
+    duplicateWarning: null,
+    showImport: false,
+    importStatus: "idle",
+    importSummary: null,
+    importProgress: null,
+    modalEntry: null,
+    modalDetails: null,
+    modalLoading: false,
+    modalError: "",
+    modalTmdbId: null,
+    modalSeasonData: {},
+    modalExpandedSeason: null,
+    libraryTab: "movies",
+    librarySearch: ""
+  };
+
+  function posterCacheKey(type, title) {
+    return (type === "movie" ? "m:" : "s:") + normalizeKey(title);
+  }
+
+  // Retire les suffixes parenthétiques du type "(US)", "(Wednesday)", "(Money Heist)"
+  // qui font échouer la recherche TMDB, ex. "The Office (US)" -> "The Office"
+  function cleanTitleForSearch(title) {
+    return title.replace(/\s*\([^)]*\)\s*$/, "").trim() || title;
+  }
+
+  function tmdbSearchRequest(entry, cleanTitle, language) {
+    var endpoint = entry.type === "movie" ? "movie" : "tv";
+    var url = "https://api.themoviedb.org/3/search/" + endpoint +
+      "?api_key=" + encodeURIComponent(state.tmdbKey) +
+      "&language=" + language + "&query=" + encodeURIComponent(cleanTitle);
+    return fetch(url).then(function (res) {
+      return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+    });
+  }
+
+  function tmdbDetailsRequest(type, id, language) {
+    var endpoint = type === "movie" ? "movie" : "tv";
+    var url = "https://api.themoviedb.org/3/" + endpoint + "/" + id +
+      "?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=" + language;
+    return fetch(url).then(function (res) {
+      return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+    });
+  }
+
+  function getCachedPoster(key) {
+    var v = posterCache[key];
+    if (v && typeof v === "object") return v;
+    if (typeof v === "string") return { path: v, id: null }; // ancien format (compat)
+    return null;
+  }
+
+  function ensurePoster(entry) {
+    if (!state.tmdbKey || tmdbBroken) return;
+    var key = posterCacheKey(entry.type, entry.title);
+    if (posterCache.hasOwnProperty(key) || posterPending[key]) return;
+    posterPending[key] = true;
+    var cleanTitle = cleanTitleForSearch(entry.title);
+
+    function handleApiError(result) {
+      tmdbBroken = true;
+      state.tmdbError = (result.data && result.data.status_message) || "Erreur API TMDB (clé invalide ?)";
+      delete posterPending[key];
+      render();
+    }
+
+    function finish(path, id) {
+      posterCache[key] = { path: path, id: id || null };
+      state.tmdbError = "";
+      savePosterCache(posterCache);
+      delete posterPending[key];
+      render();
+    }
+
+    // 1ère tentative : titre nettoyé, en français
+    tmdbSearchRequest(entry, cleanTitle, "fr-FR")
+      .then(function (result) {
+        if (!result.ok || result.data.success === false) { handleApiError(result); return; }
+        var first = result.data.results && result.data.results[0];
+        if (first && first.poster_path) { finish(first.poster_path, first.id); return; }
+        // 2e tentative : même titre, en anglais (souvent mieux indexé pour les séries étrangères/récentes)
+        return tmdbSearchRequest(entry, cleanTitle, "en-US").then(function (result2) {
+          if (!result2.ok || result2.data.success === false) { handleApiError(result2); return; }
+          var first2 = result2.data.results && result2.data.results[0];
+          finish(first2 ? first2.poster_path : null, first2 ? first2.id : null);
+        });
+      })
+      .catch(function () {
+        tmdbBroken = true;
+        state.tmdbError = "Impossible de contacter TMDB (connexion réseau ?)";
+        delete posterPending[key];
+        render();
+      });
+  }
+
+  function posterImgTag(entry) {
+    var key = posterCacheKey(entry.type, entry.title);
+    var cached = getCachedPoster(key);
+    if (cached && cached.path) {
+      return '<img src="https://image.tmdb.org/t/p/w200' + cached.path + '" alt="" loading="lazy">';
+    }
+    ensurePoster(entry);
+    return entry.type === "movie" ? "🎬" : "📺";
+  }
+
+  function openDetails(entryId) {
+    var entry = state.entries.filter(function (e) { return e.id === entryId; })[0];
+    if (!entry) return;
+    state.modalEntry = entry;
+    state.modalDetails = null;
+    state.modalError = "";
+    state.modalLoading = false;
+    state.modalTmdbId = null;
+    state.modalSeasonData = {};
+    state.modalExpandedSeason = null;
+
+    var key = posterCacheKey(entry.type, entry.title);
+    var cached = getCachedPoster(key);
+    if (!state.tmdbKey) {
+      state.modalError = "Ajoute ta clé TMDB (bandeau Affiches) pour voir le résumé.";
+      render();
+      return;
+    }
+    if (!cached || !cached.id) {
+      state.modalError = "Ce titre n'a pas été retrouvé sur TMDB, pas de résumé disponible.";
+      render();
+      return;
+    }
+    state.modalTmdbId = cached.id;
+    state.modalLoading = true;
+    render();
+    var endpoint = entry.type === "movie" ? "movie" : "tv";
+    var url = "https://api.themoviedb.org/3/" + endpoint + "/" + cached.id +
+      "?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=fr-FR";
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        state.modalLoading = false;
+        if (data && data.overview !== undefined) {
+          state.modalDetails = data;
+        } else {
+          state.modalError = "Détails indisponibles.";
+        }
+        render();
+      })
+      .catch(function () {
+        state.modalLoading = false;
+        state.modalError = "Impossible de contacter TMDB.";
+        render();
+      });
+  }
+
+  function closeDetails() {
+    state.modalEntry = null;
+    state.modalDetails = null;
+    state.modalError = "";
+    state.modalLoading = false;
+    state.modalTmdbId = null;
+    state.modalSeasonData = {};
+    state.modalExpandedSeason = null;
+    render();
+  }
+
+  function toggleSeason(seasonNumber) {
+    if (state.modalExpandedSeason === seasonNumber) {
+      state.modalExpandedSeason = null;
+      render();
+      return;
+    }
+    state.modalExpandedSeason = seasonNumber;
+    render();
+    if (state.modalSeasonData[seasonNumber]) return; // déjà en cache
+    state.modalSeasonData[seasonNumber] = { loading: true, episodes: null };
+    render();
+    var url = "https://api.themoviedb.org/3/tv/" + state.modalTmdbId + "/season/" + seasonNumber +
+      "?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=fr-FR";
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        state.modalSeasonData[seasonNumber] = { loading: false, episodes: data.episodes || [] };
+        render();
+      })
+      .catch(function () {
+        state.modalSeasonData[seasonNumber] = { loading: false, episodes: [], error: true };
+        render();
+      });
+  }
+
+  function recomputeEntryFromEpisodes(entry) {
+    var keys = Object.keys(entry.watchedEpisodes || {});
+    var sum = 0;
+    keys.forEach(function (k) { sum += entry.watchedEpisodes[k] || 0; });
+    entry.minutes = sum;
+  }
+
+  function toggleEpisodeWatched(seasonNumber, episodeNumber, runtime) {
+    var entry = state.modalEntry;
+    if (!entry) return;
+    if (!entry.watchedEpisodes) entry.watchedEpisodes = {};
+    var key = "S" + seasonNumber + "E" + episodeNumber;
+    if (entry.watchedEpisodes.hasOwnProperty(key)) {
+      delete entry.watchedEpisodes[key];
+    } else {
+      entry.watchedEpisodes[key] = runtime || 0;
+    }
+    recomputeEntryFromEpisodes(entry);
+    saveEntries(state.entries);
+    render();
+  }
+
+  function toggleWholeSeason(seasonNumber, episodes, markWatched) {
+    var entry = state.modalEntry;
+    if (!entry) return;
+    if (!entry.watchedEpisodes) entry.watchedEpisodes = {};
+    episodes.forEach(function (ep) {
+      var key = "S" + seasonNumber + "E" + ep.episode_number;
+      if (markWatched) entry.watchedEpisodes[key] = ep.runtime || 0;
+      else delete entry.watchedEpisodes[key];
+    });
+    recomputeEntryFromEpisodes(entry);
+    saveEntries(state.entries);
+    render();
+  }
+
+  function computedTotal() {
+    if (state.type === "movie") return Number(state.movieMinutes) || 0;
+    return (Number(state.seriesTotalHours) || 0) * 60 + (Number(state.seriesTotalMinutes) || 0);
+  }
+
+  function resetForm() {
+    state.title = ""; state.movieMinutes = ""; state.episodes = ""; state.episodeMinutes = "";
+    state.seriesTotalHours = ""; state.seriesTotalMinutes = ""; state.date = todayISO();
+    state.formError = ""; state.lookupStatus = "idle"; state.lookupInfo = null; state.lookupSource = null;
+    state.lookupCandidates = null;
+  }
+
+  function applyLocalMatch(found) {
+    if (state.type === "movie") {
+      state.movieMinutes = String(found.runtimeMinutes);
+    } else {
+      var total = found.totalMinutes || (found.episodeMinutes * found.totalEpisodes);
+      state.seriesTotalHours = String(Math.floor(total / 60));
+      state.seriesTotalMinutes = String(total % 60);
+    }
+    state.lookupInfo = found;
+    state.lookupSource = "local";
+    state.lookupStatus = "done";
+    state.formError = "";
+    render();
+  }
+
+  function applyTmdbMatch(cleanTitle, tmdbId, tmdbTitle, tmdbYear, details) {
+    if (state.type === "movie") {
+      var runtime = details.runtime || 0;
+      if (!runtime) {
+        state.lookupStatus = "error";
+        state.formError = "Trouvé sur TMDB mais durée inconnue. Renseigne-la manuellement.";
+        render(); return;
+      }
+      state.movieMinutes = String(runtime);
+      state.lookupInfo = { matchedTitle: tmdbTitle, year: tmdbYear, runtimeMinutes: runtime };
+    } else {
+      var totalEpisodes = details.number_of_episodes || null;
+      var epRuntime = (details.episode_run_time && details.episode_run_time[0]) || null;
+      if (!totalEpisodes || !epRuntime) {
+        state.lookupStatus = "error";
+        state.formError = "Trouvé sur TMDB mais durée/épisodes inconnus. Renseigne-le manuellement.";
+        render(); return;
+      }
+      var totalMin = totalEpisodes * epRuntime;
+      state.seriesTotalHours = String(Math.floor(totalMin / 60));
+      state.seriesTotalMinutes = String(totalMin % 60);
+      state.lookupInfo = {
+        matchedTitle: tmdbTitle, episodeMinutes: epRuntime,
+        totalEpisodes: totalEpisodes, totalSeasons: details.number_of_seasons || null
+      };
+    }
+    // On mémorise l'affiche/l'identifiant sous le titre EXACT choisi, pour l'entrée qu'on va créer
+    state.title = tmdbTitle;
+    var posterKey = posterCacheKey(state.type, tmdbTitle);
+    if (!posterCache.hasOwnProperty(posterKey) && details.poster_path) {
+      posterCache[posterKey] = { path: details.poster_path, id: tmdbId };
+      savePosterCache(posterCache);
+    }
+    state.lookupCandidates = null;
+    state.lookupSource = "tmdb";
+    state.lookupStatus = "done";
+    state.formError = "";
+    render();
+  }
+
+  function selectCandidate(id) {
+    var candidate = (state.lookupCandidates || []).filter(function (c) { return c.id === id; })[0];
+    if (!candidate) return;
+    state.lookupStatus = "loading";
+    render();
+    tmdbDetailsRequest(state.type, id, "fr-FR").then(function (detailsResult) {
+      if (!detailsResult.ok) {
+        state.lookupStatus = "error";
+        state.formError = "Impossible de récupérer les détails de ce titre.";
+        render();
+        return;
+      }
+      applyTmdbMatch(candidate.title, id, candidate.title, candidate.year, detailsResult.data);
+    });
+  }
+
+  function lookupViaTmdb() {
+    var pseudoEntry = { type: state.type };
+    var cleanTitle = cleanTitleForSearch(state.title.trim());
+
+    function toCandidate(r) {
+      return {
+        id: r.id,
+        title: r.title || r.name || cleanTitle,
+        year: (r.release_date || r.first_air_date || "").slice(0, 4) || null,
+        posterPath: r.poster_path || null
+      };
+    }
+
+    function onSearchResult(result) {
+      if (!result.ok || result.data.success === false) {
+        state.lookupStatus = "error";
+        state.formError = "Erreur TMDB : " + ((result.data && result.data.status_message) || "inconnue");
+        render();
+        return;
+      }
+      var results = (result.data.results || []).slice(0, 6);
+      if (results.length === 0) {
+        state.lookupStatus = "error";
+        state.formError = "Introuvable, ni dans la base locale ni sur TMDB. Renseigne la durée manuellement.";
+        render();
+        return;
+      }
+      if (results.length === 1) {
+        var only = toCandidate(results[0]);
+        tmdbDetailsRequest(state.type, only.id, "fr-FR").then(function (detailsResult) {
+          if (!detailsResult.ok) { state.lookupStatus = "error"; state.formError = "Trouvé mais détails indisponibles."; render(); return; }
+          applyTmdbMatch(cleanTitle, only.id, only.title, only.year, detailsResult.data);
+        });
+        return;
+      }
+      state.lookupCandidates = results.map(toCandidate);
+      state.lookupStatus = "choices";
+      render();
+    }
+
+    tmdbSearchRequest(pseudoEntry, cleanTitle, "fr-FR")
+      .then(function (result) {
+        var hasResults = result.ok && result.data.results && result.data.results.length > 0;
+        if (hasResults) { onSearchResult(result); return; }
+        // Rien en français : on retente en anglais avant d'abandonner
+        return tmdbSearchRequest(pseudoEntry, cleanTitle, "en-US").then(onSearchResult);
+      })
+      .catch(function () {
+        state.lookupStatus = "error";
+        state.formError = "Impossible de contacter TMDB (connexion réseau ?)";
+        render();
+      });
+  }
+
+  function handleLookup() {
+    if (!state.title.trim()) { state.formError = "Tape d'abord un titre à rechercher."; render(); return; }
+    state.lookupCandidates = null;
+    var db = state.type === "movie" ? KNOWN_MOVIES : KNOWN_SERIES;
+    var exactKey = normalizeKey(state.title);
+    if (db[exactKey]) { applyLocalMatch(db[exactKey]); return; }
+
+    if (!state.tmdbKey) {
+      // Sans clé TMDB, on retombe sur l'approximation locale (mieux que rien)
+      var fuzzy = findInDatabase(state.title, db);
+      if (fuzzy) { applyLocalMatch(fuzzy); return; }
+      state.lookupStatus = "error";
+      state.formError = "Ce titre n'est pas dans la base locale. Ajoute ta clé TMDB (bandeau Affiches) pour élargir la recherche, ou renseigne la durée manuellement.";
+      render();
+      return;
+    }
+
+    state.lookupStatus = "loading";
+    state.formError = "";
+    render();
+    lookupViaTmdb();
+  }
+
+  function handleAdd(force) {
+    if (!state.title.trim()) { state.formError = "Donne un titre à ce que tu as regardé."; render(); return; }
+    var total = computedTotal();
+    if (total <= 0) {
+      state.formError = state.type === "movie"
+        ? "Indique la durée du film en minutes."
+        : "Indique la durée totale de la série.";
+      render(); return;
+    }
+    if (!force) {
+      var normTitle = normalizeKey(state.title);
+      var dup = state.entries.filter(function (e) {
+        return e.type === state.type && normalizeKey(e.title) === normTitle;
+      })[0];
+      if (dup) {
+        state.duplicateWarning = dup;
+        render();
+        return;
+      }
+    }
+    state.duplicateWarning = null;
+    var entry = {
+      id: uid(), title: state.title.trim(), type: state.type, minutes: total,
+      episodes: null, episodeMinutes: null,
+      watchedEpisodes: state.type === "series" ? {} : null,
+      date: state.date
+    };
+    state.entries = [entry].concat(state.entries);
+    saveEntries(state.entries);
+    resetForm();
+    render();
+  }
+
+  function handleDelete(id) {
+    state.entries = state.entries.filter(function (e) { return e.id !== id; });
+    saveEntries(state.entries);
+    render();
+  }
+
+  function cycleRating(id) {
+    var entry = state.entries.filter(function (e) { return e.id === id; })[0];
+    if (!entry) return;
+    var current = entry.rating || 0;
+    entry.rating = current >= 5 ? 0 : current + 1;
+    saveEntries(state.entries);
+    render();
+  }
+
+  function tmdbLookupForImport(item) {
+    var pseudoEntry = { type: item.type };
+    var cleanTitle = cleanTitleForSearch(item.title);
+    return tmdbSearchRequest(pseudoEntry, cleanTitle, "fr-FR").then(function (result) {
+      var first = result.ok && result.data.results && result.data.results[0];
+      if (first) return { result: result, first: first };
+      return tmdbSearchRequest(pseudoEntry, cleanTitle, "en-US").then(function (result2) {
+        var first2 = result2.ok && result2.data.results && result2.data.results[0];
+        return { result: result2, first: first2 };
+      });
+    }).then(function (found) {
+      if (!found.result.ok || found.result.data.success === false) {
+        return { error: (found.result.data && found.result.data.status_message) || "erreur TMDB" };
+      }
+      if (!found.first) return { notFound: true };
+      var title = found.first.title || found.first.name || cleanTitle;
+      return tmdbDetailsRequest(item.type, found.first.id, "fr-FR").then(function (detailsResult) {
+        if (!detailsResult.ok) return { notFound: true };
+        var d = detailsResult.data;
+        if (item.type === "movie") {
+          if (!d.runtime) return { notFound: true };
+          return { minutes: d.runtime, matchedTitle: title, posterPath: d.poster_path, tmdbId: found.first.id };
+        } else {
+          var totalEpisodes = d.number_of_episodes || null;
+          var epRuntime = (d.episode_run_time && d.episode_run_time[0]) || null;
+          if (!totalEpisodes || !epRuntime) return { notFound: true };
+          return {
+            minutes: totalEpisodes * epRuntime, episodes: totalEpisodes, episodeMinutes: epRuntime,
+            matchedTitle: title, posterPath: d.poster_path, tmdbId: found.first.id
+          };
+        }
+      });
+    }).catch(function () {
+      return { error: "réseau" };
+    });
+  }
+
+  function finalizeImport(baseAdded, extraAdded, skippedDuplicate, stillUnmatched) {
+    state.importProgress = null;
+    state.importSummary = { added: baseAdded + extraAdded, skippedDuplicate: skippedDuplicate, unmatched: stillUnmatched };
+    state.importStatus = "done";
+    render();
+  }
+
+  function enrichRemaining(unmatchedList, index, baseAdded, extraAdded, skippedDuplicate, stillUnmatched) {
+    if (index >= unmatchedList.length || tmdbBroken || !state.tmdbKey) {
+      var rest = unmatchedList.slice(index).map(function (u) { return u.title; });
+      finalizeImport(baseAdded, extraAdded, skippedDuplicate, stillUnmatched.concat(rest));
+      return;
+    }
+    var item = unmatchedList[index];
+    state.importProgress = { done: index, total: unmatchedList.length };
+    render();
+    tmdbLookupForImport(item).then(function (res) {
+      if (res.error) {
+        tmdbBroken = true;
+        state.tmdbError = res.error;
+        var rest2 = unmatchedList.slice(index).map(function (u) { return u.title; });
+        finalizeImport(baseAdded, extraAdded, skippedDuplicate, stillUnmatched.concat(rest2));
+        return;
+      }
+      if (res.notFound) {
+        stillUnmatched.push(item.title);
+      } else {
+        var entry = {
+          id: uid(), title: item.title, type: item.type, minutes: res.minutes,
+          episodes: res.episodes || null, episodeMinutes: res.episodeMinutes || null,
+          date: item.date, imdbId: item.imdbId, importNote: "durée trouvée via TMDB"
+        };
+        state.entries = [entry].concat(state.entries);
+        saveEntries(state.entries);
+        extraAdded++;
+        if (res.posterPath) {
+          var pk = posterCacheKey(item.type, item.title);
+          if (!posterCache.hasOwnProperty(pk)) {
+            posterCache[pk] = { path: res.posterPath, id: res.tmdbId };
+            savePosterCache(posterCache);
+          }
+        }
+      }
+      enrichRemaining(unmatchedList, index + 1, baseAdded, extraAdded, skippedDuplicate, stillUnmatched);
+    });
+  }
+
+  function handleImportFile(file) {
+    state.importStatus = "loading";
+    state.importSummary = null;
+    render();
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var rows = parseCSV(reader.result);
+        var result = processImdbRows(rows, state.entries);
+        state.entries = result.newEntries.concat(state.entries);
+        saveEntries(state.entries);
+        if (state.tmdbKey && result.unmatched.length > 0) {
+          state.importStatus = "enriching";
+          render();
+          enrichRemaining(result.unmatched, 0, result.newEntries.length, 0, result.skippedDuplicate, []);
+        } else {
+          var titlesOnly = result.unmatched.map(function (u) { return u.title; });
+          finalizeImport(result.newEntries.length, 0, result.skippedDuplicate, titlesOnly);
+        }
+      } catch (e) {
+        console.error(e);
+        state.importStatus = "error";
+        render();
+      }
+    };
+    reader.onerror = function () { state.importStatus = "error"; render(); };
+    reader.readAsText(file);
+  }
+
+  // ===================== RENDU =====================
+  function sprockets(n) {
+    var s = '<div class="sprockets">';
+    for (var i = 0; i < n; i++) s += "<span></span>";
+    return s + "</div>";
+  }
+
+  function filterByTitle(items, query) {
+    if (!query || !query.trim()) return items;
+    var q = normalizeKey(query);
+    return items.filter(function (e) { return normalizeKey(e.title).indexOf(q) !== -1; });
+  }
+
+  function renderStats(entries) {
+    var html = '';
+    var rated = entries.filter(function (e) { return e.rating > 0; })
+      .slice().sort(function (a, b) { return b.rating - a.rating; }).slice(0, 5);
+    html += '<div class="episodes-title" style="margin-top:0;">Tes meilleures notes</div>';
+    if (rated.length === 0) {
+      html += '<div class="empty-box">Aucune note pour l\'instant — tape sur le petit cercle en bas des affiches pour noter.</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">';
+      rated.forEach(function (e) {
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--cardAlt);border-radius:8px;">' +
+          '<span class="serif" style="color:var(--cream);font-size:14px;">' + escapeHtml(e.title) + '</span>' +
+          '<span class="mono" style="color:var(--gold);font-size:13px;">' + "★".repeat(e.rating) + '</span></div>';
+      });
+      html += '</div>';
+    }
+    var byMonth = {};
+    entries.forEach(function (e) {
+      var m = (e.date || todayISO()).slice(0, 7);
+      byMonth[m] = (byMonth[m] || 0) + e.minutes;
+    });
+    var months = Object.keys(byMonth).sort().slice(-6);
+    html += '<div class="episodes-title">Temps par mois</div>';
+    if (months.length === 0) {
+      html += '<div class="empty-box">Pas encore assez de données.</div>';
+    } else {
+      var maxVal = Math.max.apply(null, months.map(function (m) { return byMonth[m]; }));
+      html += '<div style="display:flex;align-items:flex-end;gap:8px;height:140px;padding:10px;background:var(--cardAlt);border-radius:10px;">';
+      months.forEach(function (m) {
+        var val = byMonth[m];
+        var h = maxVal > 0 ? Math.max(4, Math.round((val / maxVal) * 100)) : 4;
+        var label = m.slice(5, 7) + "/" + m.slice(2, 4);
+        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">' +
+          '<div class="mono" style="font-size:9px;color:var(--muted);margin-bottom:4px;">' + formatDuration(val) + '</div>' +
+          '<div style="width:100%;height:' + h + '%;background:var(--gold);border-radius:4px 4px 0 0;"></div>' +
+          '<div class="mono" style="font-size:10px;color:var(--muted);margin-top:6px;">' + label + '</div></div>';
+      });
+      html += '</div>';
+    }
+    return html;
+  }
+
+  function renderEntryList(items) {
+    if (items.length === 0) return "";
+    var html = '<div class="poster-grid">';
+    items.forEach(function (e) {
+      var icon = posterImgTag(e);
+      var rating = e.rating || 0;
+      var pct = (rating / 5) * 100;
+      var ringStyle = 'background: conic-gradient(var(--gold) ' + pct + '%, rgba(255,255,255,0.18) ' + pct + '%);';
+      html += '<div class="poster-card">' +
+        '<button class="poster-clickzone" data-open="' + e.id + '" aria-label="Voir les détails de ' + escapeHtml(e.title) + '"></button>' +
+        '<button class="poster-delete" data-delete="' + e.id + '" aria-label="Supprimer">🗑️</button>' +
+        '<button class="poster-rating" data-rate="' + e.id + '" style="' + ringStyle + '" aria-label="Noter ' + escapeHtml(e.title) + '">' +
+        '<span class="poster-rating-inner">' + (rating || "–") + '</span>' +
+        '</button>' +
+        '<div class="poster-img-wrap">' + icon + '</div>' +
+        '<div class="poster-info">' +
+        '<div class="poster-title">' + escapeHtml(e.title) + '</div>' +
+        '<div class="poster-duration">' + formatDuration(e.minutes) + '</div>' +
+        '</div></div>';
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderModal(entry) {
+    var key = posterCacheKey(entry.type, entry.title);
+    var cached = getCachedPoster(key);
+    var posterHtml = cached && cached.path
+      ? '<img src="https://image.tmdb.org/t/p/w200' + cached.path + '" alt="">'
+      : (entry.type === "movie" ? "🎬" : "📺");
+
+    var html = '<div class="modal-overlay" id="modalOverlay">' +
+      '<div class="modal-box">' +
+      '<button class="modal-close" id="modalClose" aria-label="Fermer">✕</button>' +
+      '<div class="modal-header">' +
+      '<div class="modal-poster">' + posterHtml + '</div>' +
+      '<div>' +
+      '<div class="modal-title">' + escapeHtml(entry.title) + '</div>' +
+      '<div class="modal-meta">' + formatDuration(entry.minutes);
+
+    if (entry.type === "series") {
+      if (state.modalDetails && state.modalDetails.number_of_episodes) {
+        html += ' · ' + state.modalDetails.number_of_episodes + ' épisodes' +
+          (state.modalDetails.number_of_seasons ? ' · ' + state.modalDetails.number_of_seasons + ' saisons' : '');
+      } else if (entry.episodes) {
+        html += ' · ' + entry.episodes + ' ép. vus × ' + entry.episodeMinutes + ' min';
+      }
+    } else if (state.modalDetails && state.modalDetails.runtime) {
+      html += ' · ' + state.modalDetails.runtime + ' min (officiel)';
+    }
+    html += '</div></div></div>';
+
+    if (state.modalLoading) {
+      html += '<p class="modal-loading">Chargement du résumé…</p>';
+    } else if (state.modalError) {
+      html += '<p class="modal-empty">' + escapeHtml(state.modalError) + '</p>';
+    } else if (state.modalDetails) {
+      var overview = state.modalDetails.overview;
+      html += '<p class="modal-overview">' + (overview ? escapeHtml(overview) : "Pas de résumé disponible pour ce titre.") + '</p>';
+
+      if (entry.type === "series" && state.modalDetails.seasons && state.modalDetails.seasons.length > 0) {
+        var watched = entry.watchedEpisodes || {};
+        html += '<div class="episodes-title">Épisodes vus</div>';
+        state.modalDetails.seasons.forEach(function (season) {
+          var sNum = season.season_number;
+          var watchedCount = Object.keys(watched).filter(function (k) { return k.indexOf("S" + sNum + "E") === 0; }).length;
+          var isOpen = state.modalExpandedSeason === sNum;
+          html += '<div class="season-block">' +
+            '<button class="season-header" data-toggle-season="' + sNum + '">' +
+            '<span>' + escapeHtml(season.name || ("Saison " + sNum)) + '</span>' +
+            '<span class="season-count">' + watchedCount + ' / ' + season.episode_count + ' ' + (isOpen ? "▲" : "▼") + '</span>' +
+            '</button>';
+          if (isOpen) {
+            html += '<div class="season-body">';
+            var seasonData = state.modalSeasonData[sNum];
+            if (!seasonData || seasonData.loading) {
+              html += '<p class="modal-loading">Chargement des épisodes…</p>';
+            } else if (seasonData.error) {
+              html += '<p class="modal-empty">Épisodes indisponibles pour cette saison.</p>';
+            } else {
+              html += '<div class="season-actions">' +
+                '<button data-checkall-season="' + sNum + '">Tout cocher</button>' +
+                '<button data-uncheckall-season="' + sNum + '">Tout décocher</button>' +
+                '</div>';
+              seasonData.episodes.forEach(function (ep) {
+                var epKey = "S" + sNum + "E" + ep.episode_number;
+                var checked = watched.hasOwnProperty(epKey);
+                html += '<label class="episode-row">' +
+                  '<input type="checkbox" data-toggle-episode="' + epKey + '" data-season="' + sNum + '" data-episode="' + ep.episode_number + '" data-runtime="' + (ep.runtime || 0) + '"' + (checked ? " checked" : "") + '>' +
+                  '<span><span class="episode-name">' + ep.episode_number + '. ' + escapeHtml(ep.name || "") + '</span>' +
+                  '<div class="episode-meta">' + (ep.runtime ? ep.runtime + " min" : "durée inconnue") + '</div></span>' +
+                  '</label>';
+              });
+            }
+            html += '</div>';
+          }
+          html += '</div>';
+        });
+      }
+    }
+
+    html += '</div></div>';
+    return html;
+  }
+
+  function render() {
+    var activeId = document.activeElement ? document.activeElement.id : null;
+    var titleHadFocus = activeId === "titleInput";
+    var searchHadFocus = activeId === "librarySearchInput";
+    var caretPos = (titleHadFocus || searchHadFocus) && document.activeElement.selectionStart != null
+      ? document.activeElement.selectionStart : null;
+    var entries = state.entries;
+    var totalMinutes = entries.reduce(function (s, e) { return s + e.minutes; }, 0);
+    var movies = entries.filter(function (e) { return e.type === "movie"; });
+    var series = entries.filter(function (e) { return e.type === "series"; });
+    var movieMinutesTotal = movies.reduce(function (s, e) { return s + e.minutes; }, 0);
+    var seriesMinutesTotal = series.reduce(function (s, e) { return s + e.minutes; }, 0);
+    var sortedMovies = movies.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var sortedSeries = series.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var total = computedTotal();
+
+    var html = "";
+
+    // Header
+    html += '<header>' + sprockets(20) +
+      '<div class="wrap header-inner">' +
+      '<div><div class="eyebrow mono">🎟️ <span style="text-transform:uppercase;letter-spacing:0.08em;font-size:12px;">Votre séance personnelle</span></div>' +
+      '<h1 class="title marquee">WATCH TIME</h1></div>' +
+      '<div><div class="total-label mono">Temps total au visionnage</div>' +
+      '<div class="total-value marquee">' + formatDuration(totalMinutes) + '</div></div>' +
+      '</div>' + sprockets(20) + '</header>';
+
+    html += '<main class="wrap">';
+
+    // Import panel
+    html += '<div class="panel">' +
+      '<button class="panel-header" id="toggleImport">' +
+      '<span>📤 Importer mon historique IMDb</span><span>' + (state.showImport ? "−" : "+") + '</span></button>';
+    if (state.showImport) {
+      html += '<div class="panel-body">' +
+        '<p>Exporte tes notes IMDb en CSV (ou utilise le fichier généré depuis ta liste), puis choisis-le ci-dessous. Avec une clé TMDB configurée, les titres absents de la base locale seront aussi recherchés automatiquement.</p>' +
+        '<label class="upload-btn">📤 ' + (state.importStatus === "loading" ? "Lecture du fichier…" : "Choisir le fichier CSV") +
+        '<input type="file" accept=".csv" id="importInput" style="display:none;"></label>';
+      if (state.importStatus === "enriching" && state.importProgress) {
+        html += '<p class="hint muted" style="margin-top:8px;">⏳ Recherche TMDB pour les titres restants… ' +
+          state.importProgress.done + ' / ' + state.importProgress.total + '</p>';
+      }
+      if (state.importStatus === "done" && state.importSummary) {
+        html += '<p class="hint good" style="margin-top:8px;">' + state.importSummary.added + ' titre(s) ajouté(s) · ' + state.importSummary.skippedDuplicate + ' déjà présent(s)</p>';
+        if (state.importSummary.unmatched.length > 0) {
+          html += '<p class="hint muted">Introuvable même via TMDB : ' + state.importSummary.unmatched.slice(0, 8).map(escapeHtml).join(", ") + (state.importSummary.unmatched.length > 8 ? "…" : "") + '</p>';
+        }
+        if (state.tmdbError) {
+          html += '<p class="hint bad">TMDB s\'est arrêté en cours de route : ' + escapeHtml(state.tmdbError) + '</p>';
+        }
+      }
+      if (state.importStatus === "error") {
+        html += '<p class="hint bad">Le fichier n\'a pas pu être lu.</p>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Settings panel (TMDB)
+    html += '<div class="panel">' +
+      '<button class="panel-header" id="toggleSettings">' +
+      '<span>🖼️ Affiches (TMDB)</span><span>' + (state.showSettings ? "−" : "+") + '</span></button>';
+    if (state.showSettings) {
+      html += '<div class="panel-body">' +
+        '<p>Colle ta clé API TMDB (gratuite, themoviedb.org/settings/api) pour afficher automatiquement les affiches.</p>' +
+        '<input type="text" id="tmdbKeyInput" value="' + escapeHtml(state.tmdbKey) + '" placeholder="Clé API TMDB (v3 auth)" style="margin-bottom:8px;">' +
+        '<button class="add-btn" id="saveTmdbKeyBtn" style="background:var(--goldDim);">💾 Enregistrer la clé</button>';
+      if (state.tmdbKey) {
+        html += '<p class="hint good" style="margin-top:8px;">Clé enregistrée. Les affiches se chargent automatiquement dans la bibliothèque.</p>';
+      }
+      if (state.tmdbError) {
+        html += '<p class="hint bad" style="margin-top:8px;">TMDB : ' + escapeHtml(state.tmdbError) + '</p>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="grid">';
+
+    // Form column
+    html += '<div>';
+    html += '<div class="panel"><h2 class="card-title marquee">Nouvelle entrée</h2><div class="form-body">';
+
+    html += '<div class="toggle-row">' +
+      '<button class="toggle-btn' + (state.type === "movie" ? " active" : "") + '" data-type="movie">🎬 Film</button>' +
+      '<button class="toggle-btn' + (state.type === "series" ? " active" : "") + '" data-type="series">📺 Série</button>' +
+      '</div>';
+
+    html += '<div><label class="field-label">Titre</label><div class="title-row">' +
+      '<input type="text" id="titleInput" value="' + escapeHtml(state.title) + '" placeholder="' + (state.type === "movie" ? "Ex. Interstellar" : "Ex. The Office") + '">' +
+      '<button class="find-btn" id="findBtn"' + (state.lookupStatus === "loading" ? " disabled" : "") + '>' +
+      (state.lookupStatus === "loading" ? "⏳ Recherche…" : "🔍 Trouver") + '</button></div>';
+    if (state.lookupStatus === "error") {
+      html += '<p class="hint muted">Astuce : pour un titre récent ou confidentiel, la durée manuelle reste la solution.</p>';
+    }
+    if (state.lookupStatus === "done" && state.lookupInfo) {
+      var li = state.lookupInfo;
+      var sourceTag = state.lookupSource === "tmdb" ? " (via TMDB)" : " (base locale)";
+      html += '<p class="hint good">' + (state.type === "movie"
+        ? escapeHtml(li.matchedTitle) + (li.year ? " (" + li.year + ")" : "") + " · " + li.runtimeMinutes + " min trouvées" + sourceTag
+        : escapeHtml(li.matchedTitle) + " · " + li.episodeMinutes + " min/ép." + (li.totalEpisodes ? " · " + li.totalEpisodes + " ép. au total" : "") + sourceTag) + '</p>';
+    }
+    if (state.lookupStatus === "choices" && state.lookupCandidates) {
+      html += '<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">' +
+        '<p class="hint muted" style="margin:0;">Plusieurs résultats, choisis le bon :</p>';
+      state.lookupCandidates.forEach(function (c) {
+        html += '<button data-select-candidate="' + c.id + '" style="text-align:left;padding:8px 10px;border-radius:8px;background:var(--cardAlt);border:1px solid var(--line);color:var(--cream);font-family:\'Libre Caslon Text\',serif;font-size:14px;">' +
+          escapeHtml(c.title) + (c.year ? ' <span style="color:var(--muted);">(' + c.year + ')</span>' : '') + '</button>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    if (state.type === "movie") {
+      html += '<div><label class="field-label">Durée (minutes)</label>' +
+        '<input type="number" id="movieMinutesInput" value="' + escapeHtml(state.movieMinutes) + '" placeholder="Ex. 169"></div>';
+    } else {
+      html += '<div class="row2">' +
+        '<div><label class="field-label">Heures</label><input type="number" id="seriesHoursInput" value="' + escapeHtml(state.seriesTotalHours) + '" placeholder="Ex. 9"></div>' +
+        '<div><label class="field-label">Minutes</label><input type="number" id="seriesMinutesInput" value="' + escapeHtml(state.seriesTotalMinutes) + '" placeholder="Ex. 30"></div>' +
+        '</div>' +
+        '<p class="hint muted">Astuce : ajoute une valeur approximative ici, tu pourras cocher les épisodes précis vus dans la fiche détail après ajout.</p>';
+    }
+
+    html += '<div><label class="field-label">Date</label><input type="date" id="dateInput" value="' + state.date + '"></div>';
+
+    if (total > 0) {
+      html += '<div class="computed-box"><span class="serif" style="color:var(--muted);font-size:14px;">Temps calculé</span>' +
+        '<span class="mono" style="color:var(--gold);font-size:14px;">' + formatDuration(total) + '</span></div>';
+    }
+
+    if (state.formError) {
+      html += '<p class="hint bad" style="font-size:14px;">' + escapeHtml(state.formError) + '</p>';
+    }
+
+    if (state.duplicateWarning) {
+      html += '<div style="padding:10px 12px;border-radius:8px;background:var(--cardAlt);border:1px solid #D9756B;">' +
+        '<p class="hint bad" style="margin:0 0 6px;">« ' + escapeHtml(state.duplicateWarning.title) + ' » est déjà dans ta bibliothèque (ajouté le ' + formatDateFR(state.duplicateWarning.date) + ').</p>' +
+        '<button id="forceAddBtn" style="width:100%;padding:8px;border-radius:6px;background:var(--goldDim);border:none;color:var(--cream);font-family:\'IBM Plex Mono\',monospace;font-size:12px;text-transform:uppercase;">Ajouter quand même</button>' +
+        '</div>';
+    }
+
+    html += '<button class="add-btn" id="addBtn">➕ Ajouter à la bibliothèque</button>';
+    html += '</div></div>';
+
+    // Stats
+    html += '<div class="panel stats-panel">' +
+      '<div><div class="stat-label">🎬 Films</div><div class="stat-value marquee">' + movies.length + '</div><div class="stat-sub">' + formatDuration(movieMinutesTotal) + '</div></div>' +
+      '<div><div class="stat-label">📺 Séries</div><div class="stat-value marquee">' + series.length + '</div><div class="stat-sub">' + formatDuration(seriesMinutesTotal) + '</div></div>' +
+      '</div>';
+
+    html += '</div>'; // end form column
+
+    // Library column
+    html += '<div>';
+    html += '<div class="section-title"><span>⏱️</span><h2 class="marquee" style="font-size:24px;">Bibliothèque</h2></div>';
+
+    if (entries.length === 0) {
+      html += '<div class="empty-box">L\'écran est encore vide. Ajoute ton premier film ou ta première série.</div>';
+    } else {
+      html += '<div class="toggle-row" style="margin-bottom:12px;">' +
+        '<button class="toggle-btn' + (state.libraryTab === "movies" ? " active" : "") + '" data-libtab="movies">🎬 Films <span style="opacity:0.7;">· ' + movies.length + '</span></button>' +
+        '<button class="toggle-btn' + (state.libraryTab === "series" ? " active" : "") + '" data-libtab="series">📺 Séries <span style="opacity:0.7;">· ' + series.length + '</span></button>' +
+        '<button class="toggle-btn' + (state.libraryTab === "stats" ? " active" : "") + '" data-libtab="stats">📊 Stats</button>' +
+        '</div>';
+      if (state.libraryTab === "movies" || state.libraryTab === "series") {
+        html += '<input type="text" id="librarySearchInput" value="' + escapeHtml(state.librarySearch) + '" placeholder="🔍 Chercher un titre…" style="margin-bottom:14px;">';
+      }
+
+      if (state.libraryTab === "movies") {
+        var filteredMovies = filterByTitle(sortedMovies, state.librarySearch);
+        html += movies.length === 0
+          ? '<div class="empty-box">Aucun film pour l\'instant.</div>'
+          : filteredMovies.length === 0
+          ? '<div class="empty-box">Aucun résultat pour « ' + escapeHtml(state.librarySearch) + ' ».</div>'
+          : renderEntryList(filteredMovies);
+      } else if (state.libraryTab === "series") {
+        var filteredSeries = filterByTitle(sortedSeries, state.librarySearch);
+        html += series.length === 0
+          ? '<div class="empty-box">Aucune série pour l\'instant.</div>'
+          : filteredSeries.length === 0
+          ? '<div class="empty-box">Aucun résultat pour « ' + escapeHtml(state.librarySearch) + ' ».</div>'
+          : renderEntryList(filteredSeries);
+      } else {
+        html += renderStats(entries);
+      }
+    }
+
+    html += '</div>'; // end library column
+    html += '</div>'; // end grid
+    html += '</main>';
+
+    if (state.modalEntry) {
+      html += renderModal(state.modalEntry);
+    }
+
+    document.getElementById("root").innerHTML = html;
+    attachEvents(titleHadFocus, searchHadFocus, caretPos);
+  }
+
+  function attachEvents(titleHadFocus, searchHadFocus, caretPos) {
+    var root = document.getElementById("root");
+
+    var toggleImport = document.getElementById("toggleImport");
+    if (toggleImport) toggleImport.onclick = function () { state.showImport = !state.showImport; render(); };
+
+    var toggleSettings = document.getElementById("toggleSettings");
+    if (toggleSettings) toggleSettings.onclick = function () { state.showSettings = !state.showSettings; render(); };
+
+    var tmdbKeyInput = document.getElementById("tmdbKeyInput");
+    if (tmdbKeyInput) tmdbKeyInput.oninput = function () { state.tmdbKey = tmdbKeyInput.value; };
+
+    var saveTmdbKeyBtn = document.getElementById("saveTmdbKeyBtn");
+    if (saveTmdbKeyBtn) saveTmdbKeyBtn.onclick = function () {
+      saveTmdbKey(state.tmdbKey.trim());
+      state.tmdbKey = state.tmdbKey.trim();
+      state.tmdbError = "";
+      tmdbBroken = false;
+      render();
+    };
+
+    var importInput = document.getElementById("importInput");
+    if (importInput) importInput.onchange = function (e) {
+      if (e.target.files && e.target.files[0]) handleImportFile(e.target.files[0]);
+    };
+
+    root.querySelectorAll("[data-type]").forEach(function (btn) {
+      btn.onclick = function () { state.type = btn.getAttribute("data-type"); render(); };
+    });
+    root.querySelectorAll("[data-libtab]").forEach(function (btn) {
+      btn.onclick = function () { state.libraryTab = btn.getAttribute("data-libtab"); render(); };
+    });
+
+    var titleInput = document.getElementById("titleInput");
+    if (titleInput) {
+      titleInput.oninput = function () { state.title = titleInput.value; state.lookupStatus = "idle"; state.lookupInfo = null; state.lookupCandidates = null; state.duplicateWarning = null; };
+      if (titleHadFocus) {
+        titleInput.focus();
+        var pos = caretPos != null ? caretPos : titleInput.value.length;
+        titleInput.setSelectionRange(pos, pos);
+      }
+    }
+    var librarySearchInput = document.getElementById("librarySearchInput");
+    if (librarySearchInput) {
+      librarySearchInput.oninput = function () { state.librarySearch = librarySearchInput.value; render(); };
+      if (searchHadFocus) {
+        librarySearchInput.focus();
+        var spos = caretPos != null ? caretPos : librarySearchInput.value.length;
+        librarySearchInput.setSelectionRange(spos, spos);
+      }
+    }
+
+    var findBtn = document.getElementById("findBtn");
+    if (findBtn) findBtn.onclick = handleLookup;
+
+    var movieMinutesInput = document.getElementById("movieMinutesInput");
+    if (movieMinutesInput) movieMinutesInput.oninput = function () { state.movieMinutes = movieMinutesInput.value; refreshComputedOnly(); };
+
+    var seriesHoursInput = document.getElementById("seriesHoursInput");
+    if (seriesHoursInput) seriesHoursInput.oninput = function () { state.seriesTotalHours = seriesHoursInput.value; refreshComputedOnly(); };
+    var seriesMinutesInput = document.getElementById("seriesMinutesInput");
+    if (seriesMinutesInput) seriesMinutesInput.oninput = function () { state.seriesTotalMinutes = seriesMinutesInput.value; refreshComputedOnly(); };
+
+    var dateInput = document.getElementById("dateInput");
+    if (dateInput) dateInput.onchange = function () { state.date = dateInput.value; };
+
+    var addBtn = document.getElementById("addBtn");
+    if (addBtn) addBtn.onclick = function () { handleAdd(false); };
+
+    var forceAddBtn = document.getElementById("forceAddBtn");
+    if (forceAddBtn) forceAddBtn.onclick = function () { handleAdd(true); };
+
+    root.querySelectorAll("[data-select-candidate]").forEach(function (btn) {
+      btn.onclick = function () { selectCandidate(Number(btn.getAttribute("data-select-candidate"))); };
+    });
+
+    root.querySelectorAll("[data-delete]").forEach(function (btn) {
+      btn.onclick = function () { handleDelete(btn.getAttribute("data-delete")); };
+    });
+
+    root.querySelectorAll("[data-rate]").forEach(function (btn) {
+      btn.onclick = function () { cycleRating(btn.getAttribute("data-rate")); };
+    });
+
+    root.querySelectorAll("[data-open]").forEach(function (btn) {
+      btn.onclick = function () { openDetails(btn.getAttribute("data-open")); };
+    });
+
+    var modalOverlay = document.getElementById("modalOverlay");
+    if (modalOverlay) modalOverlay.onclick = function (e) { if (e.target === modalOverlay) closeDetails(); };
+    var modalClose = document.getElementById("modalClose");
+    if (modalClose) modalClose.onclick = closeDetails;
+
+    root.querySelectorAll("[data-toggle-season]").forEach(function (btn) {
+      btn.onclick = function () { toggleSeason(Number(btn.getAttribute("data-toggle-season"))); };
+    });
+    root.querySelectorAll("[data-toggle-episode]").forEach(function (cb) {
+      cb.onchange = function () {
+        toggleEpisodeWatched(Number(cb.getAttribute("data-season")), Number(cb.getAttribute("data-episode")), Number(cb.getAttribute("data-runtime")));
+      };
+    });
+    root.querySelectorAll("[data-checkall-season]").forEach(function (btn) {
+      btn.onclick = function () {
+        var sNum = Number(btn.getAttribute("data-checkall-season"));
+        var seasonData = state.modalSeasonData[sNum];
+        if (seasonData && seasonData.episodes) toggleWholeSeason(sNum, seasonData.episodes, true);
+      };
+    });
+    root.querySelectorAll("[data-uncheckall-season]").forEach(function (btn) {
+      btn.onclick = function () {
+        var sNum = Number(btn.getAttribute("data-uncheckall-season"));
+        var seasonData = state.modalSeasonData[sNum];
+        if (seasonData && seasonData.episodes) toggleWholeSeason(sNum, seasonData.episodes, false);
+      };
+    });
+
+    // Debounced full re-render on numeric inputs so the computed total updates live
+    // without losing focus: we re-render only the computed box + button state via light touch.
+    function refreshComputedOnly() {
+      var total = computedTotal();
+      // Full render is simplest and safe here; inputs keep value from state on next render.
+      // To avoid focus loss, we just update text nodes directly instead of full render.
+      var addBtnEl = document.getElementById("addBtn");
+      var existingBox = root.querySelector(".computed-box .mono");
+      if (existingBox) existingBox.textContent = formatDuration(total);
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
