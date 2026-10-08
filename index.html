@@ -88,6 +88,12 @@
   .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.03em; color: var(--cream); line-height: 1.15; }
   .modal-meta { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold); margin-top: 6px; }
   .modal-overview { font-family: 'Libre Caslon Text', serif; font-size: 15px; line-height: 1.5; color: var(--cream); margin-top: 4px; }
+  .cast-row { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 8px; -webkit-overflow-scrolling: touch; }
+  .cast-card { flex: 0 0 76px; text-align: center; }
+  .cast-photo { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; background: var(--cardAlt); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 6px; }
+  .cast-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cast-name { font-family: 'Libre Caslon Text', serif; font-size: 12px; color: var(--cream); line-height: 1.25; }
+  .cast-role { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); margin-top: 2px; }
   .modal-loading, .modal-empty { font-family: 'Libre Caslon Text', serif; color: var(--muted); font-size: 14px; }
   .episodes-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--gold); letter-spacing: 0.03em; margin: 18px 0 8px; }
   .season-block { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
@@ -670,7 +676,7 @@
     render();
     var endpoint = entry.type === "movie" ? "movie" : "tv";
     var url = "https://api.themoviedb.org/3/" + endpoint + "/" + cached.id +
-      "?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=fr-FR";
+      "?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=fr-FR&append_to_response=credits";
     fetch(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
@@ -1197,6 +1203,22 @@
       var overview = state.modalDetails.overview;
       html += '<p class="modal-overview">' + (overview ? escapeHtml(overview) : "Pas de résumé disponible pour ce titre.") + '</p>';
 
+      var cast = state.modalDetails.credits && state.modalDetails.credits.cast;
+      if (cast && cast.length > 0) {
+        html += '<div class="episodes-title">Casting</div><div class="cast-row">';
+        cast.slice(0, 12).forEach(function (actor) {
+          var photo = actor.profile_path
+            ? '<img src="https://image.tmdb.org/t/p/w185' + actor.profile_path + '" alt="">'
+            : '🎭';
+          html += '<div class="cast-card">' +
+            '<div class="cast-photo">' + photo + '</div>' +
+            '<div class="cast-name">' + escapeHtml(actor.name) + '</div>' +
+            '<div class="cast-role">' + escapeHtml(actor.character || "") + '</div>' +
+            '</div>';
+        });
+        html += '</div>';
+      }
+
       if (entry.type === "series" && state.modalDetails.seasons && state.modalDetails.seasons.length > 0) {
         var watched = entry.watchedEpisodes || {};
         html += '<div class="episodes-title">Épisodes vus</div>';
@@ -1519,7 +1541,14 @@
     });
 
     root.querySelectorAll("[data-delete]").forEach(function (btn) {
-      btn.onclick = function () { handleDelete(btn.getAttribute("data-delete")); };
+      btn.onclick = function () {
+        var id = btn.getAttribute("data-delete");
+        var entry = state.entries.filter(function (e) { return e.id === id; })[0];
+        var name = entry ? entry.title : "ce titre";
+        if (confirm("Supprimer « " + name + " » de ta bibliothèque ?")) {
+          handleDelete(id);
+        }
+      };
     });
 
     root.querySelectorAll("[data-rate]").forEach(function (btn) {
@@ -1575,3 +1604,4 @@
 </script>
 </body>
 </html>
+
