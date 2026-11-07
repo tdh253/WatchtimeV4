@@ -109,6 +109,24 @@
   .episode-meta { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); margin-top: 2px; }
   .delete-btn { background: none; border: none; color: var(--muted); cursor: pointer; opacity: 0.6; font-size: 15px; }
   .delete-btn:hover { opacity: 1; }
+
+body{background:radial-gradient(120% 60% at 50% 0%,#2a1d12 0%,#120e0b 60%)!important}
+.app{max-width:520px;margin:0 auto;padding:18px 16px 110px;position:relative}
+.filmstrip{position:absolute;top:0;left:-16px;right:-16px;height:70px;opacity:.35;background:repeating-linear-gradient(90deg,#3a2616 0 18px,#120e0b 18px 26px);transform:skewY(-4deg);border-radius:6px}
+.gear,.iconbtn{background:#1e1812;border:1px solid #3a2d1c;color:var(--gold);border-radius:14px;width:44px;height:44px;font-size:20px}
+.gear{position:absolute;right:16px;top:60px}
+.eyebrow{margin-top:80px;color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:12px}.tk{background:#7a1f1f;padding:6px 8px;border-radius:6px;margin-right:8px}
+h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(--muted);letter-spacing:.2em;text-transform:uppercase;font-size:11px;margin:8px 0 14px}
+.glass{background:linear-gradient(160deg,#241b12,#16110c);border:1px solid #3a2d1c;border-radius:22px;padding:14px 16px;margin-bottom:14px}
+.timecard{display:flex;align-items:center;gap:16px}.ico{font-size:34px}.timeval{font-size:36px;color:var(--gold)}.bar{height:3px;width:100%;background:linear-gradient(90deg,var(--gold),transparent);margin-top:6px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.tile{display:flex;align-items:center;gap:8px;background:#1b150f;border:1px solid #3a2d1c;border-radius:18px;padding:12px 10px;color:var(--cream);text-align:left}.tile span{font-size:22px}.tile small{display:block;color:var(--muted);font-size:12px}.tile b{font-size:20px}.tile i{margin-left:auto;color:var(--gold)}
+.ticket{width:100%;display:flex;align-items:center;gap:14px;background:#1b150f;border:1px solid #3a2d1c;border-radius:18px;padding:0 14px 0 0;color:var(--cream);text-align:left;margin-bottom:20px;overflow:hidden}.stub{background:#7a1f1f;font-size:34px;width:78px;align-self:stretch;display:flex;align-items:center;justify-content:center;color:#fff}.ticket b{color:var(--gold);font-size:22px;display:block}.ticket small{color:var(--muted)}.ticket i{margin-left:auto;color:var(--gold)}
+.sechead{display:flex;align-items:center;gap:10px;margin:6px 0 12px}.gb{width:4px;height:22px;background:var(--gold);border-radius:2px}.sechead h2{margin:0;color:var(--gold);font-size:22px;flex:1}.sechead button{background:none;border:none;color:var(--gold)}
+.preview .poster-grid{grid-template-columns:repeat(3,1fr)}.statsmini{margin-top:18px}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.two small{color:var(--muted);display:block}.two b{font-size:34px;color:var(--cream)}.two em{color:#6fbf73;font-style:normal;display:block;font-size:12px}
+.topbar{display:flex;align-items:center;gap:12px;margin:6px 0 16px}.ttl{font-size:30px;margin:0;color:var(--cream)}.ttl.gold{color:var(--gold)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;background:#16110c;border-top:1px solid #3a2d1c;padding:8px 0 22px;z-index:40}.tabbar button{flex:1;background:none;border:none;color:var(--muted);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}.tabbar button span{font-size:22px}.tabbar button.on{color:var(--gold)}
+.rank{padding:6px 12px}.rrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2a2016}.rrow:last-child{border:none}.rn{color:var(--gold);width:20px}.rth{width:38px;height:54px;border-radius:6px;overflow:hidden;background:#241f19;display:flex;align-items:center;justify-content:center}.rth img{width:100%;height:100%;object-fit:cover}.rt{flex:1;font-size:14px}.rs{color:var(--gold);font-size:12px}
+.poster-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}.poster-card{border-radius:20px!important}.poster-card .poster-info{position:absolute;left:0;right:0;bottom:0;padding:34px 38px 10px 10px;background:linear-gradient(transparent,rgba(0,0,0,.88))}.poster-card .poster-rating{top:8px!important;right:8px!important;bottom:auto!important;width:28px;height:28px;background:var(--gold)!important}.poster-card .poster-rating-inner{background:transparent!important;color:#15120F!important;font-weight:700}.poster-card .poster-delete{top:auto!important;bottom:8px!important;right:8px!important}
 </style>
 </head>
 <body>
@@ -555,6 +573,7 @@
     modalTmdbId: null,
     modalSeasonData: {},
     modalExpandedSeason: null,
+    screen: "home",
     libraryTab: "movies",
     librarySearch: ""
   };
@@ -1293,6 +1312,7 @@
 
     html += '<main class="wrap">';
 
+    html += '<!--S:import-->';
     // Import panel
     html += '<div class="panel">' +
       '<button class="panel-header" id="toggleImport">' +
@@ -1322,6 +1342,7 @@
     }
     html += '</div>';
 
+    html += '<!--E--><!--S:settings-->';
     // Settings panel (TMDB)
     html += '<div class="panel">' +
       '<button class="panel-header" id="toggleSettings">' +
@@ -1339,12 +1360,13 @@
       }
       html += '</div>';
     }
-    html += '</div>';
+    html += '</div><!--E-->';
 
     html += '<div class="grid">';
 
     // Form column
     html += '<div>';
+    html += '<!--S:form-->';
     html += '<div class="panel"><h2 class="card-title marquee">Nouvelle entrée</h2><div class="form-body">';
 
     html += '<div class="toggle-row">' +
@@ -1407,7 +1429,7 @@
     }
 
     html += '<button class="add-btn" id="addBtn">➕ Ajouter à la bibliothèque</button>';
-    html += '</div></div>';
+    html += '</div></div><!--E-->';
 
     // Stats
     html += '<div class="panel stats-panel">' +
@@ -1420,6 +1442,7 @@
     // Library column
     html += '<div>';
     html += '<div class="section-title"><span>⏱️</span><h2 class="marquee" style="font-size:24px;">Bibliothèque</h2></div>';
+    html += '<!--S:library-->';
 
     if (entries.length === 0) {
       html += '<div class="empty-box">L\'écran est encore vide. Ajoute ton premier film ou ta première série.</div>';
@@ -1452,7 +1475,7 @@
       }
     }
 
-    html += '</div>'; // end library column
+    html += '<!--E--></div>'; // end library column
     html += '</div>'; // end grid
     html += '</main>';
 
@@ -1460,6 +1483,41 @@
       html += renderModal(state.modalEntry);
     }
 
+    var segs = {}, re = /<!--S:(\w+)-->([\s\S]*?)<!--E-->/g, mm;
+    while ((mm = re.exec(html))) segs[mm[1]] = mm[2];
+    var mi = html.indexOf('<div class="modal-overlay"');
+    var modalHtml = mi >= 0 ? html.slice(mi) : "";
+    var scr = state.screen, body = "";
+    function back(t) { return '<div class="topbar"><button class="iconbtn" data-screen="home">‹</button><h1 class="marquee ttl">' + t + '</h1></div>'; }
+    if (scr === "home") {
+      body = '<div class="filmstrip"></div><button class="iconbtn gear" data-screen="settings">⚙️</button>' +
+        '<div class="eyebrow mono"><span class="tk">★</span> Votre séance personnelle</div>' +
+        '<h1 class="marquee big">WATCH TIME</h1><div class="mono sub">Temps total au visionnage</div>' +
+        '<div class="glass timecard"><span class="ico">⏱️</span><div><div class="marquee timeval">' + formatDuration(totalMinutes).toUpperCase() + '</div><div class="bar"></div></div></div>' +
+        '<div class="tiles"><button class="tile" data-screen="library" data-tab="movies"><span>🎬</span><div><small>Films</small><b>' + movies.length + '</b></div></button>' +
+        '<button class="tile" data-screen="library" data-tab="series"><span>📺</span><div><small>Séries</small><b>' + series.length + '</b></div></button>' +
+        '<button class="tile" data-screen="library" data-tab="stats"><span>📊</span><div><small>Stats</small></div><i>›</i></button></div>' +
+        '<button class="ticket" data-screen="add"><span class="stub">+</span><div><b class="marquee">NOUVELLE ENTRÉE</b><small>Ajoutez un film ou une série à votre collection</small></div><i>›</i></button>' +
+        '<div class="sechead"><span class="gb"></span><h2 class="marquee">BIBLIOTHÈQUE</h2><button data-screen="library">Voir tout →</button></div>' +
+        '<div class="preview">' + (entries.length ? renderEntryList(entries.slice(0, 3)) : '<div class="empty-box">Ajoute ton premier titre.</div>') + '</div>' +
+        '<div class="glass statsmini"><div class="sechead"><span class="gb"></span><h2 class="marquee">MES STATISTIQUES</h2></div><div class="two"><div><small>🎬 FILMS</small><b class="marquee">' + movies.length + '</b><em>' + formatDuration(movieMinutesTotal) + '</em></div><div><small>📺 SÉRIES</small><b class="marquee">' + series.length + '</b><em>' + formatDuration(seriesMinutesTotal) + '</em></div></div></div>';
+    } else if (scr === "library") {
+      body = '<div class="topbar"><h1 class="marquee ttl gold">BIBLIOTHÈQUE</h1></div>' + (segs.library || "");
+    } else if (scr === "ranking") {
+      var top = entries.filter(function (e) { return e.rating > 0; }).sort(function (a, b) { return b.rating - a.rating; }).slice(0, 30);
+      body = '<div class="topbar"><h1 class="marquee ttl gold">CLASSEMENT</h1></div>' + (top.length ? '<div class="glass rank">' + top.map(function (e, i) {
+        return '<div class="rrow"><span class="rn">' + (i + 1) + '</span><div class="rth">' + posterImgTag(e) + '</div><span class="rt">' + escapeHtml(e.title) + '</span><span class="rs">' + "★".repeat(e.rating) + '</span></div>';
+      }).join("") + '</div>' : '<div class="empty-box">Note tes titres (cercle doré sur les affiches) pour les voir ici.</div>');
+    } else if (scr === "add") {
+      body = back("NOUVELLE ENTRÉE") + (segs.form || "");
+    } else {
+      body = back("RÉGLAGES") + (segs.import || "") + (segs.settings || "");
+    }
+    var act = scr === "ranking" ? "ranking" : (scr === "library" ? "library" : "home");
+    var nav = '<nav class="tabbar">' + [["home", "🏠", "Accueil"], ["library", "📚", "Bibliothèque"], ["ranking", "🏆", "Classement"]].map(function (t) {
+      return '<button class="' + (act === t[0] ? "on" : "") + '" data-screen="' + t[0] + '"><span>' + t[1] + '</span>' + t[2] + '</button>';
+    }).join("") + '</nav>';
+    html = '<div class="app">' + body + '</div>' + nav + modalHtml;
     document.getElementById("root").innerHTML = html;
     attachEvents(titleHadFocus, searchHadFocus, caretPos);
   }
@@ -1492,6 +1550,13 @@
 
     root.querySelectorAll("[data-type]").forEach(function (btn) {
       btn.onclick = function () { state.type = btn.getAttribute("data-type"); render(); };
+    });
+    root.querySelectorAll("[data-screen]").forEach(function (b) {
+      b.onclick = function () {
+        state.screen = b.getAttribute("data-screen");
+        var t = b.getAttribute("data-tab"); if (t) state.libraryTab = t;
+        render(); window.scrollTo(0, 0);
+      };
     });
     root.querySelectorAll("[data-libtab]").forEach(function (btn) {
       btn.onclick = function () { state.libraryTab = btn.getAttribute("data-libtab"); render(); };
@@ -1604,5 +1669,6 @@
 </script>
 </body>
 </html>
+
 
 
