@@ -131,6 +131,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 .rank{padding:6px 12px}.rrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2a2016}.rrow:last-child{border:none}.rn{color:var(--gold);width:20px}.rth{width:38px;height:54px;border-radius:6px;overflow:hidden;background:#241f19;display:flex;align-items:center;justify-content:center}.rth img{width:100%;height:100%;object-fit:cover}.rt{flex:1;font-size:14px}.rs{color:var(--gold);font-size:12px}
 .poster-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}.poster-card{border-radius:20px!important}.poster-card .poster-info{position:absolute;left:0;right:0;bottom:0;padding:34px 38px 10px 10px;background:linear-gradient(transparent,rgba(0,0,0,.88))}.poster-card .poster-rating{top:8px!important;right:8px!important;bottom:auto!important;width:28px;height:28px;background:var(--gold)!important}.poster-card .poster-rating-inner{background:transparent!important;color:#15120F!important;font-weight:700}.poster-card .poster-delete{top:auto!important;bottom:8px!important;right:8px!important}
 .i{width:1.15em;height:1.15em;vertical-align:-.2em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.donutcard{display:flex;align-items:center;gap:20px}.donut{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.donut .dh{width:98px;height:98px;border-radius:50%;background:#16110c;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.donut .dh b{font-size:17px;color:var(--gold)}.donut .dh small{color:var(--muted);font-size:11px}.legend div{margin:8px 0;color:var(--cream);font-size:14px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.gauge{height:4px;background:rgba(255,255,255,.22);border-radius:2px;margin-top:6px;overflow:hidden}.gfill{height:100%;background:var(--gold);border-radius:2px}.gfill.done{background:#6fbf73}.gtxt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#cfc6b8;margin-top:3px}
 </style>
 </head>
 <body>
@@ -706,6 +707,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         state.modalLoading = false;
         if (data && data.overview !== undefined) {
           state.modalDetails = data;
+          if (data.number_of_episodes && state.modalEntry) { state.modalEntry.totalEpisodes = data.number_of_episodes; saveEntries(state.entries); }
         } else {
           state.modalError = "Détails indisponibles.";
         }
@@ -764,7 +766,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
   function toggleEpisodeWatched(seasonNumber, episodeNumber, runtime) {
     var entry = state.modalEntry;
     if (!entry) return;
-    if (!entry.watchedEpisodes) entry.watchedEpisodes = {};
+    if (!entry.watchedEpisodes) entry.watchedEpisodes = {}; entry.tracked = true;
     var key = "S" + seasonNumber + "E" + episodeNumber;
     if (entry.watchedEpisodes.hasOwnProperty(key)) {
       delete entry.watchedEpisodes[key];
@@ -779,7 +781,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
   function toggleWholeSeason(seasonNumber, episodes, markWatched) {
     var entry = state.modalEntry;
     if (!entry) return;
-    if (!entry.watchedEpisodes) entry.watchedEpisodes = {};
+    if (!entry.watchedEpisodes) entry.watchedEpisodes = {}; entry.tracked = true;
     episodes.forEach(function (ep) {
       var key = "S" + seasonNumber + "E" + ep.episode_number;
       if (markWatched) entry.watchedEpisodes[key] = ep.runtime || 0;
@@ -975,6 +977,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
       id: uid(), title: state.title.trim(), type: state.type, minutes: total,
       episodes: null, episodeMinutes: null,
       watchedEpisodes: state.type === "series" ? {} : null,
+      totalEpisodes: (state.type === "series" && state.lookupInfo && state.lookupInfo.totalEpisodes) || null,
       date: state.date
     };
     state.entries = [entry].concat(state.entries);
@@ -1172,6 +1175,13 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     items.forEach(function (e) {
       var icon = posterImgTag(e);
       var rating = e.rating || 0;
+      var gauge = "";
+      if (e.type === "series") {
+        var gt = e.totalEpisodes || e.episodes || 0, gw = Object.keys(e.watchedEpisodes || {}).length;
+        var gp = !e.tracked ? 100 : (gt ? Math.min(100, Math.round(gw / gt * 100)) : 0);
+        gauge = '<div class="gauge"><div class="gfill' + (gp >= 100 ? ' done' : '') + '" style="width:' + gp + '%"></div></div>' +
+          '<div class="gtxt">' + (gp >= 100 ? 'Terminée' : gw + (gt ? ' / ' + gt : '') + ' ép.') + '</div>';
+      }
       var pct = (rating / 5) * 100;
       var ringStyle = 'background: conic-gradient(var(--gold) ' + pct + '%, rgba(255,255,255,0.18) ' + pct + '%);';
       html += '<div class="poster-card">' +
@@ -1183,7 +1193,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         '<div class="poster-img-wrap">' + icon + '</div>' +
         '<div class="poster-info">' +
         '<div class="poster-title">' + escapeHtml(e.title) + '</div>' +
-        '<div class="poster-duration">' + formatDuration(e.minutes) + '</div>' +
+        '<div class="poster-duration">' + formatDuration(e.minutes) + '</div>' + gauge +
         '</div></div>';
     });
     html += "</div>";
@@ -1679,6 +1689,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 </script>
 </body>
 </html>
+
 
 
 
