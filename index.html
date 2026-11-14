@@ -132,6 +132,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 .poster-grid{grid-template-columns:repeat(2,1fr)!important;gap:12px!important}.poster-card{border-radius:20px!important}.poster-card .poster-info{position:absolute;left:0;right:0;bottom:0;padding:34px 38px 10px 10px;background:linear-gradient(transparent,rgba(0,0,0,.88))}.poster-card .poster-rating{top:8px!important;right:8px!important;bottom:auto!important;width:28px;height:28px;background:var(--gold)!important}.poster-card .poster-rating-inner{background:transparent!important;color:#15120F!important;font-weight:700}.poster-card .poster-delete{top:auto!important;bottom:8px!important;right:8px!important}
 .i{width:1.15em;height:1.15em;vertical-align:-.2em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.donutcard{display:flex;align-items:center;gap:20px}.donut{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.donut .dh{width:98px;height:98px;border-radius:50%;background:#16110c;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.donut .dh b{font-size:17px;color:var(--gold)}.donut .dh small{color:var(--muted);font-size:11px}.legend div{margin:8px 0;color:var(--cream);font-size:14px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 .gauge{height:4px;background:rgba(255,255,255,.22);border-radius:2px;margin-top:6px;overflow:hidden}.gfill{height:100%;background:var(--gold);border-radius:2px}.gfill.done{background:#6fbf73}.gtxt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#cfc6b8;margin-top:3px}
+.sugrow{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;margin-bottom:18px;-webkit-overflow-scrolling:touch}.sug{flex:0 0 112px;background:none;border:none;text-align:left;color:var(--cream);padding:0}.sug .sp{width:112px;height:168px;border-radius:16px;overflow:hidden;background:#241f19;border:1px solid #3a2d1c}.sug img{width:100%;height:100%;object-fit:cover;display:block}.sug span{display:block;font-size:12px;margin-top:6px;line-height:1.25}
 </style>
 </head>
 <body>
@@ -579,6 +580,8 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     modalSeasonData: {},
     modalExpandedSeason: null,
     screen: "home",
+    suggestions: null,
+    suggestLoading: false,
     libraryTab: "movies",
     librarySearch: ""
   };
@@ -984,6 +987,32 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     saveEntries(state.entries);
     resetForm();
     render();
+  }
+
+  function loadSuggestions() {
+    state.suggestLoading = true;
+    var owned = {};
+    state.entries.forEach(function (e) { owned[normalizeKey(e.title)] = true; });
+    var seeds = state.entries.slice().sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); }).filter(function (e) {
+      var c = getCachedPoster(posterCacheKey(e.type, e.title)); return c && c.id;
+    }).slice(0, 4);
+    if (!seeds.length) { state.suggestions = []; state.suggestLoading = false; return; }
+    Promise.all(seeds.map(function (e) {
+      var c = getCachedPoster(posterCacheKey(e.type, e.title));
+      var ep = e.type === "movie" ? "movie" : "tv";
+      return fetch("https://api.themoviedb.org/3/" + ep + "/" + c.id + "/recommendations?api_key=" + encodeURIComponent(state.tmdbKey) + "&language=fr-FR")
+        .then(function (r) { return r.json(); })
+        .then(function (d) { return (d.results || []).map(function (x) { return { id: x.id, type: e.type, title: x.title || x.name, poster: x.poster_path, v: x.vote_average || 0 }; }); })
+        .catch(function () { return []; });
+    })).then(function (lists) {
+      var seen = {}, out = [];
+      [].concat.apply([], lists).sort(function (a, b) { return b.v - a.v; }).forEach(function (x) {
+        var k = x.type + x.id;
+        if (seen[k] || !x.poster || !x.title || owned[normalizeKey(x.title)]) return;
+        seen[k] = true; out.push(x);
+      });
+      state.suggestions = out.slice(0, 12); state.suggestLoading = false; render();
+    });
   }
 
   function handleDelete(id) {
@@ -1502,6 +1531,15 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     var mi = html.indexOf('<div class="modal-overlay"');
     var modalHtml = mi >= 0 ? html.slice(mi) : "";
     var scr = state.screen, body = "";
+    var suggestHtml = "";
+    if (scr === "home" && state.tmdbKey) {
+      if (state.suggestions === null && !state.suggestLoading) loadSuggestions();
+      suggestHtml = '<div class="sechead"><span class="gb"></span><h2 class="marquee">À VOIR ENSUITE</h2></div>' +
+        (state.suggestLoading ? '<div class="empty-box">Recherche de suggestions…</div>' :
+        (state.suggestions && state.suggestions.length ? '<div class="sugrow">' + state.suggestions.map(function (x) {
+          return '<button class="sug" data-suggest="' + x.id + '" data-type="' + x.type + '" data-title="' + escapeHtml(x.title) + '"><div class="sp"><img src="https://image.tmdb.org/t/p/w185' + x.poster + '" alt=""></div><span>' + escapeHtml(x.title) + '</span></button>';
+        }).join("") + '</div>' : '<div class="empty-box">Note quelques titres (4★ et plus) pour avoir des suggestions personnalisées.</div>'));
+    }
     function back(t) { return '<div class="topbar"><button class="iconbtn" data-screen="home">‹</button><h1 class="marquee ttl">' + t + '</h1></div>'; }
     if (scr === "home") {
       body = '<div class="filmstrip"></div><button class="iconbtn gear" data-screen="settings">⚙️</button>' +
@@ -1514,7 +1552,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         '<button class="ticket" data-screen="add"><span class="stub">+</span><div><b class="marquee">NOUVELLE ENTRÉE</b><small>Ajoutez un film ou une série à votre collection</small></div><i>›</i></button>' +
         '<div class="sechead"><span class="gb"></span><h2 class="marquee">BIBLIOTHÈQUE</h2><button data-screen="library">Voir tout →</button></div>' +
         '<div class="preview">' + (entries.length ? renderEntryList(entries.slice(0, 3)) : '<div class="empty-box">Ajoute ton premier titre.</div>') + '</div>' +
-        '<div class="glass statsmini"><div class="sechead"><span class="gb"></span><h2 class="marquee">MES STATISTIQUES</h2></div><div class="two"><div><small>🎬 FILMS</small><b class="marquee">' + movies.length + '</b><em>' + formatDuration(movieMinutesTotal) + '</em></div><div><small>📺 SÉRIES</small><b class="marquee">' + series.length + '</b><em>' + formatDuration(seriesMinutesTotal) + '</em></div></div></div>';
+        suggestHtml + '<div class="glass statsmini"><div class="sechead"><span class="gb"></span><h2 class="marquee">MES STATISTIQUES</h2></div><div class="two"><div><small>🎬 FILMS</small><b class="marquee">' + movies.length + '</b><em>' + formatDuration(movieMinutesTotal) + '</em></div><div><small>📺 SÉRIES</small><b class="marquee">' + series.length + '</b><em>' + formatDuration(seriesMinutesTotal) + '</em></div></div></div>';
     } else if (scr === "library") {
       body = '<div class="topbar"><h1 class="marquee ttl gold">BIBLIOTHÈQUE</h1></div>' + (segs.library || "");
     } else if (scr === "stats") {
@@ -1576,6 +1614,14 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         state.screen = b.getAttribute("data-screen");
         var t = b.getAttribute("data-tab"); if (t) state.libraryTab = t;
         render(); window.scrollTo(0, 0);
+      };
+    });
+    root.querySelectorAll("[data-suggest]").forEach(function (b) {
+      b.onclick = function () {
+        var id = Number(b.getAttribute("data-suggest"));
+        state.type = b.getAttribute("data-type"); state.title = b.getAttribute("data-title");
+        state.lookupCandidates = [{ id: id, title: state.title, year: null }];
+        state.screen = "add"; selectCandidate(id); window.scrollTo(0, 0);
       };
     });
     root.querySelectorAll("[data-libtab]").forEach(function (btn) {
@@ -1689,6 +1735,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 </script>
 </body>
 </html>
+
 
 
 
