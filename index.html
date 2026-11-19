@@ -136,6 +136,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 .sug{flex:0 0 112px;position:relative;color:var(--cream)}.sug .sp{display:block;position:relative;width:112px;height:168px;padding:0;border-radius:16px;overflow:visible;background:#241f19;border:1px solid #3a2d1c}.sug .sp>img:first-child{width:100%;height:100%;object-fit:cover;border-radius:15px;display:block}.sug .sprov{position:absolute;right:6px;bottom:6px;width:30px;height:30px;border-radius:50%;border:2px solid #15120F;object-fit:cover}.sug .sdel{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(21,18,15,.8);color:var(--cream);font-size:16px;line-height:1;padding:0}.sug span{display:block;font-size:12px;margin-top:6px;line-height:1.25}
 .gchips{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}.gchip{flex:0 0 auto;padding:6px 12px;border-radius:999px;border:1px solid #3a2d1c;background:#1b150f;color:var(--cream);font-size:12px}.gchip.on{background:var(--gold);color:#15120F;border-color:var(--gold)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.chip{padding:4px 10px;border-radius:999px;background:#241f19;border:1px solid #3a2d1c;color:var(--gold);font-size:12px}.provs{display:flex;flex-wrap:wrap;gap:12px}.prov{display:flex;align-items:center;gap:8px;font-size:13px}.prov img{width:34px;height:34px;border-radius:50%}
+.cand{display:flex;align-items:center;gap:12px;text-align:left;padding:8px;border-radius:12px;background:var(--cardAlt);border:1px solid var(--line);color:var(--cream)}.cth{width:44px;height:64px;border-radius:8px;overflow:hidden;background:#241f19;flex-shrink:0;display:block}.cth img{width:100%;height:100%;object-fit:cover;display:block}.cand b{display:block;font-weight:400;font-size:14px}.cand small{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -1490,8 +1491,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
       html += '<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">' +
         '<p class="hint muted" style="margin:0;">Plusieurs résultats, choisis le bon :</p>';
       state.lookupCandidates.forEach(function (c) {
-        html += '<button data-select-candidate="' + c.id + '" style="text-align:left;padding:8px 10px;border-radius:8px;background:var(--cardAlt);border:1px solid var(--line);color:var(--cream);font-family:\'Libre Caslon Text\',serif;font-size:14px;">' +
-          escapeHtml(c.title) + (c.year ? ' <span style="color:var(--muted);">(' + c.year + ')</span>' : '') + '</button>';
+        html += '<button data-select-candidate="' + c.id + '" class="cand"><span class="cth">' + (c.posterPath ? '<img src="https://image.tmdb.org/t/p/w92' + c.posterPath + '" alt="">' : '') + '</span><span><b>' + escapeHtml(c.title) + '</b>' + (c.year ? '<small>' + c.year + '</small>' : '') + '</span></button>';
       });
       html += '</div>';
     }
@@ -1803,6 +1803,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 </script>
 </body>
 </html>
+
 
 
 
