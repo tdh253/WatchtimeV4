@@ -137,6 +137,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 .gchips{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}.gchip{flex:0 0 auto;padding:6px 12px;border-radius:999px;border:1px solid #3a2d1c;background:#1b150f;color:var(--cream);font-size:12px}.gchip.on{background:var(--gold);color:#15120F;border-color:var(--gold)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.chip{padding:4px 10px;border-radius:999px;background:#241f19;border:1px solid #3a2d1c;color:var(--gold);font-size:12px}.provs{display:flex;flex-wrap:wrap;gap:12px}.prov{display:flex;align-items:center;gap:8px;font-size:13px}.prov img{width:34px;height:34px;border-radius:50%}
 .cand{display:flex;align-items:center;gap:12px;text-align:left;padding:8px;border-radius:12px;background:var(--cardAlt);border:1px solid var(--line);color:var(--cream)}.cth{width:44px;height:64px;border-radius:8px;overflow:hidden;background:#241f19;flex-shrink:0;display:block}.cth img{width:100%;height:100%;object-fit:cover;display:block}.cand b{display:block;font-weight:400;font-size:14px}.cand small{color:var(--muted)}
+.poster-card .vbadge{position:absolute;top:8px;left:8px;z-index:2;pointer-events:none;background:rgba(21,18,15,.85);color:var(--gold);border-radius:10px;padding:2px 7px;font-size:11px;font-family:'IBM Plex Mono',monospace}.views{margin-bottom:12px}.vrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #2a2016;font-size:13px}.vrow button{background:none;border:none;color:var(--muted);font-size:18px}.addview{margin-top:8px;width:100%;padding:8px;border-radius:10px;background:transparent;border:1px solid var(--goldDim);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:12px}
 </style>
 </head>
 <body>
@@ -394,6 +395,9 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     if (m === 0) return h + " h";
     return h + " h " + m + " min";
   }
+
+  function viewDates(e) { return (e.views && e.views.length) ? e.views.slice() : [e.date || todayISO()]; }
+  function viewCount(e) { return viewDates(e).length; }
 
   function todayISO() {
     return new Date().toISOString().slice(0, 10);
@@ -1223,8 +1227,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     }
     var byMonth = {};
     entries.forEach(function (e) {
-      var m = (e.date || todayISO()).slice(0, 7);
-      byMonth[m] = (byMonth[m] || 0) + e.minutes;
+      viewDates(e).forEach(function (d) { var m = d.slice(0, 7); byMonth[m] = (byMonth[m] || 0) + e.minutes; });
     });
     var months = Object.keys(byMonth).sort().slice(-6);
     html += '<div class="episodes-title">Temps par mois</div>';
@@ -1268,7 +1271,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         '<button class="poster-rating" data-rate="' + e.id + '" style="' + ringStyle + '" aria-label="Noter ' + escapeHtml(e.title) + '">' +
         '<span class="poster-rating-inner">' + (rating || "–") + '</span>' +
         '</button>' +
-        '<div class="poster-img-wrap">' + icon + '</div>' +
+        (viewCount(e) > 1 ? '<span class="vbadge">×' + viewCount(e) + '</span>' : '') + '<div class="poster-img-wrap">' + icon + '</div>' +
         '<div class="poster-info">' +
         '<div class="poster-title">' + escapeHtml(e.title) + '</div>' +
         '<div class="poster-duration">' + formatDuration(e.minutes) + '</div>' + gauge +
@@ -1306,6 +1309,10 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     }
     html += '</div></div></div>';
 
+    var vs = viewDates(entry);
+    html += '<div class="episodes-title" style="margin-top:4px;">Visionnages · ' + vs.length + '</div><div class="views">' + vs.map(function (d, i) {
+      return '<div class="vrow"><span>' + (i + 1) + '. ' + formatDateFR(d) + '</span>' + (vs.length > 1 ? '<button data-delview="' + i + '" aria-label="Supprimer ce visionnage">×</button>' : '') + '</div>';
+    }).join("") + '<button class="addview" data-addview="1">+ Je l\'ai revu</button></div>';
     if (state.modalLoading) {
       html += '<p class="modal-loading">Chargement du résumé…</p>';
     } else if (state.modalError) {
@@ -1389,11 +1396,11 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     var caretPos = (titleHadFocus || searchHadFocus) && document.activeElement.selectionStart != null
       ? document.activeElement.selectionStart : null;
     var entries = state.entries;
-    var totalMinutes = entries.reduce(function (s, e) { return s + e.minutes; }, 0);
+    var totalMinutes = entries.reduce(function (s, e) { return s + e.minutes * viewCount(e); }, 0);
     var movies = entries.filter(function (e) { return e.type === "movie"; });
     var series = entries.filter(function (e) { return e.type === "series"; });
-    var movieMinutesTotal = movies.reduce(function (s, e) { return s + e.minutes; }, 0);
-    var seriesMinutesTotal = series.reduce(function (s, e) { return s + e.minutes; }, 0);
+    var movieMinutesTotal = movies.reduce(function (s, e) { return s + e.minutes * viewCount(e); }, 0);
+    var seriesMinutesTotal = series.reduce(function (s, e) { return s + e.minutes * viewCount(e); }, 0);
     var sortedMovies = movies.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     var sortedSeries = series.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     var total = computedTotal();
@@ -1522,6 +1529,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     if (state.duplicateWarning) {
       html += '<div style="padding:10px 12px;border-radius:8px;background:var(--cardAlt);border:1px solid #D9756B;">' +
         '<p class="hint bad" style="margin:0 0 6px;">« ' + escapeHtml(state.duplicateWarning.title) + ' » est déjà dans ta bibliothèque (ajouté le ' + formatDateFR(state.duplicateWarning.date) + ').</p>' +
+        '<button id="rewatchBtn" style="width:100%;padding:8px;border-radius:6px;background:var(--gold);border:none;color:#15120F;font-family:\'IBM Plex Mono\',monospace;font-size:12px;text-transform:uppercase;margin-bottom:6px;">Marquer comme revu (+1)</button>' +
         '<button id="forceAddBtn" style="width:100%;padding:8px;border-radius:6px;background:var(--goldDim);border:none;color:var(--cream);font-family:\'IBM Plex Mono\',monospace;font-size:12px;text-transform:uppercase;">Ajouter quand même</button>' +
         '</div>';
     }
@@ -1684,6 +1692,20 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
         render();
       };
     });
+    root.querySelectorAll("[data-addview]").forEach(function (b) {
+      b.onclick = function () {
+        var e = state.modalEntry; if (!e) return;
+        var d = prompt("Date du nouveau visionnage (AAAA-MM-JJ)", todayISO());
+        if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+        e.views = viewDates(e).concat([d]).sort(); saveEntries(state.entries); render();
+      };
+    });
+    root.querySelectorAll("[data-delview]").forEach(function (b) {
+      b.onclick = function () {
+        var e = state.modalEntry; if (!e) return; var idx = Number(b.getAttribute("data-delview"));
+        e.views = viewDates(e).filter(function (_, i) { return i !== idx; }); saveEntries(state.entries); render();
+      };
+    });
     root.querySelectorAll("[data-suggest]").forEach(function (b) {
       b.onclick = function () {
         var id = Number(b.getAttribute("data-suggest"));
@@ -1732,6 +1754,13 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
     var addBtn = document.getElementById("addBtn");
     if (addBtn) addBtn.onclick = function () { handleAdd(false); };
 
+    var rewatchBtn = document.getElementById("rewatchBtn");
+    if (rewatchBtn) rewatchBtn.onclick = function () {
+      var dw = state.duplicateWarning; if (!dw) return;
+      var real = state.entries.filter(function (e) { return e.id === dw.id; })[0];
+      if (real) { real.views = viewDates(real).concat([state.date]).sort(); saveEntries(state.entries); }
+      state.duplicateWarning = null; resetForm(); state.screen = "library"; render();
+    };
     var forceAddBtn = document.getElementById("forceAddBtn");
     if (forceAddBtn) forceAddBtn.onclick = function () { handleAdd(true); };
 
@@ -1803,6 +1832,7 @@ h1.big{font-size:64px;margin:6px 0 0;color:#f3ecdf;line-height:1}.sub{color:var(
 </script>
 </body>
 </html>
+
 
 
 
